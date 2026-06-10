@@ -27,6 +27,7 @@ tui    = ["rich>=13", "questionary>=2"]         # M5: terminal installer/config/
 dev    = ["pytest>=7"]
 
 [project.scripts]
+flowlinux = "flowlinux.cli_main:main"
 flowlinux-inject = "flowlinux.cli:main"
 
 [tool.setuptools.packages.find]

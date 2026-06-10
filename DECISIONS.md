@@ -98,3 +98,19 @@ Since a dictation transcript can contain arbitrary Unicode, `InjectionManager` w
 multiline, longer than 40 chars, or contains any non-ASCII char; short pure-ASCII still types
 first (feels native). Escalation and the notify fallback are unchanged. `prefer_paste()` is
 unit-tested. Explicit `--method type|paste` still force the order.
+
+## M2 results (2026-06-10)
+PTT hotkey + 16 kHz capture loop, end-to-end verified.
+- **Hotkey:** pynput X11 listener monitors Right-Ctrl (no grab); OS auto-repeat collapsed to
+  single down/up edges. State machine (`PTTController`) supports hold/toggle/double-tap, unit-
+  tested with injected time. Live test: simulated `Control_R` hold (xdotool) → record → release
+  → save; 1.3 s held ≈ 1.29 s captured.
+- **Audio:** sounddevice InputStream, 16 kHz mono int16; input device resolves to pulse/pipewire
+  (clean resample) with sounddevice-default fallback. `record_fixed()` for a headless mic test.
+- **Feedback (no GUI, ADR-0007):** start/stop beeps (sounddevice sine, fade to avoid clicks) +
+  libnotify; all best-effort/try-except so a cue failure never breaks capture.
+- **CLI:** `flowlinux record` (`--mode`, `--key`, `--once`, `--duration`, `--no-save`,
+  `--no-feedback`), `flowlinux doctor` (now incl. input-device + hotkey health), `flowlinux version`.
+- **Bug caught by test:** `np.abs(int16(-32768))` overflows to -32768; peak now widens to int32.
+- **Privacy note:** M2 saves WAVs for development; M3+ will gate disk writes behind history-enabled.
+- 20 unit tests pass (injection 11 + hotkey 6 + audio 3).

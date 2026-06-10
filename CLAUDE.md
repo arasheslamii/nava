@@ -43,11 +43,15 @@ python3 -m venv .venv && . .venv/bin/activate
 pip install -e .[dev]
 sudo apt-get install -y xdotool xclip libnotify-bin      # system deps (X11)
 
-echo "hello world" | flowlinux-inject          # type via XTEST
-echo "hello world" | flowlinux-inject --paste   # clipboard paste
-flowlinux-inject --doctor                        # diagnostics
-flowlinux-inject --wait 2 "switch focus first"   # delay then inject
-pytest -q                                        # tests
+pip install -e ".[hotkey,audio,dev]"             # M2 deps (pynput, sounddevice, numpy)
+
+echo "hello world" | flowlinux-inject            # M1: type via XTEST
+echo "hello world" | flowlinux-inject --paste     # M1: clipboard paste
+flowlinux record                                  # M2: hold Right-Ctrl to talk (PTT daemon)
+flowlinux record --mode toggle --once             # M2: toggle, capture one utterance
+flowlinux record --duration 2                     # M2: 2s mic test (no hotkey)
+flowlinux doctor                                  # diagnostics: injection + audio + hotkey
+pytest -q                                         # tests
 ```
 
 ## Conventions

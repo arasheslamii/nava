@@ -17,9 +17,15 @@ Build vertically — each milestone is end-to-end usable. Status: ✅ done · �
 - [x] **Acceptance (GUI, read-back verified):** Firefox ✅, VS Code/Electron ✅, LibreOffice ✅
       (paste delivers Unicode that type drops). Results in DECISIONS.md
 
-## M2 — Hotkey + audio loop ⬜
-- pynput Right-Ctrl push-to-talk (hold/toggle/double-tap); beep + visual cue; 16kHz mono
-  capture via sounddevice; save WAV; CLI daemon.
+## M2 — Hotkey + audio loop ✅
+- [x] PTTController state machine: hold / toggle / double-tap (pure, unit-tested)
+- [x] PynputX11Hotkey: X11 Right-Ctrl monitor, auto-repeat collapsed to single edges
+- [x] AudioRecorder: sounddevice 16 kHz mono int16 (prefers pulse/pipewire); save_wav
+- [x] Feedback: start/stop beeps + libnotify cues (no GUI); `--no-feedback` to silence
+- [x] `flowlinux record` daemon (hold/toggle/double-tap, `--once`, `--duration` mic test)
+- [x] `flowlinux doctor` extended with input-device + hotkey health
+- [x] **Acceptance:** live PTT via simulated Right-Ctrl → 1.3 s hold captured to valid
+      16 kHz WAV; fixed-duration mic capture verified; 20 tests pass
 
 ## M3 — Local ASR + benchmark ⬜
 - faster-whisper (CT2 3.24) AND whisper.cpp-CUDA behind one `ASRBackend`; Silero VAD;
