@@ -1,0 +1,57 @@
+# CLAUDE.md — FlowLinux conventions & build/run
+
+System-wide, local-first AI voice dictation for Linux. Clean-room implementation — no
+code, assets, or branding copied from any other product.
+
+## Target machine (dev/reference)
+Linux Mint 22 (Ubuntu 24.04 base) · Cinnamon on **X11** · PipeWire · i7-4720HQ (Haswell,
+4c/8t) · GTX 960M 4GB (Maxwell CC 5.0, driver 470 / CUDA 11.4) · 15 GiB RAM.
+Full environment + rationale in [PLAN.md](PLAN.md).
+
+## Architecture (locked — see DECISIONS.md)
+- **All-Python core + PySide6 UI.** No Rust helper (X11 makes injection trivial).
+- **Injection:** XTEST typing (xdotool) primary → clipboard-paste (xclip) → notify. Behind
+  an `Injector` interface; a `WaylandInjector` slots in later.
+- **Hotkey:** pynput X11 monitor, Right-Ctrl push-to-talk (M2).
+- **ASR:** best-available path at startup (GPU default here, CPU universal fallback);
+  faster-whisper (CT2 3.24) AND whisper.cpp-CUDA behind one interface; **M3 benchmark
+  picks the default.** Model tiered by path (GPU: distil-large-v3 int8; CPU: base/small).
+- **Formatting:** Tier-1 rules default; Tier-2 cloud LLM opt-in; Tier-3 local LLM off here.
+- **Cloud:** opt-in, off by default.
+
+## Priorities (resolve tradeoffs in this order)
+1. English accuracy → 2. noise robustness → 3. reliability/safety → 4. speed.
+
+## Repo layout
+```
+flowlinux/
+  injection/   # M1 — Injector iface, xdotool/clipboard/notify backends, manager, window, preflight
+  cli.py       # M1 — `flowlinux-inject`
+  core/ hotkey/ audio/ asr/ format/ ui/ diagnostics/   # stubs, filled per milestone
+bench/          # M3+ WER + latency harness
+packaging/      # M7 deb/appimage/systemd
+tests/          # pytest
+```
+
+## Build / run
+```bash
+python3 -m venv .venv && . .venv/bin/activate
+pip install -e .[dev]
+sudo apt-get install -y xdotool xclip libnotify-bin      # system deps (X11)
+
+echo "hello world" | flowlinux-inject          # type via XTEST
+echo "hello world" | flowlinux-inject --paste   # clipboard paste
+flowlinux-inject --doctor                        # diagnostics
+flowlinux-inject --wait 2 "switch focus first"   # delay then inject
+pytest -q                                        # tests
+```
+
+## Conventions
+- Python 3.10+, `from __future__ import annotations`, type hints, dataclasses.
+- Backends **never raise** from `inject()` — return `InjectionResult(ok=False)` so the
+  manager can escalate. Surface failures; never fail silently.
+- New runtime dependency on system state ⇒ add a health check + a degraded-mode fallback.
+- Keep idle footprint low: load models lazily, never hold a local LLM and Whisper at once.
+- Privacy: no telemetry; audio never written to disk unless history is explicitly enabled.
+- Log every notable decision in [DECISIONS.md](DECISIONS.md); track milestones in
+  [ROADMAP.md](ROADMAP.md).

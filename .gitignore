@@ -1,0 +1,20 @@
+__pycache__/
+*.pyc
+*.egg-info/
+.venv/
+venv/
+build/
+dist/
+.pytest_cache/
+.mypy_cache/
+# downloaded ASR models (never commit weights)
+models/
+*.bin
+*.gguf
+# recorded audio / transcripts (privacy: never commit user data)
+*.wav
+.history/
+# scratch
+/tmp_*
+# local Claude Code project settings
+.claude/

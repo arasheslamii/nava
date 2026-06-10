@@ -1,0 +1,36 @@
+[build-system]
+requires = ["setuptools>=68", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "flowlinux"
+version = "0.0.1"
+description = "System-wide, local-first AI voice dictation for Linux (clean-room)."
+readme = "README.md"
+requires-python = ">=3.10"
+license = { text = "Apache-2.0" }
+authors = [{ name = "FlowLinux" }]
+
+# M1 (injection) is pure-stdlib; backends shell out to xdotool/xclip/notify-send.
+dependencies = []
+
+[project.optional-dependencies]
+# Installed per-milestone to keep idle footprint small (memory discipline — see PLAN.md).
+hotkey = ["pynput>=1.7"]                       # M2: X11 push-to-talk
+audio  = ["sounddevice>=0.4", "numpy>=1.24"]   # M2/M3: 16kHz capture
+# M3 ASR — EXACT PINS RESOLVED BY THE M3 BENCHMARK, intentionally unpinned here:
+#   GPU on driver-470 / CUDA-11 needs CTranslate2 3.24.x + a faster-whisper release
+#   targeting CT2 3.x (NOT CT2 4.x, which requires CUDA 12), OR whisper.cpp-CUDA built
+#   separately. Plus silero-vad and an optional denoise (noisereduce / RNNoise).
+asr    = []
+ui     = ["PySide6>=6.6"]                       # M5: tray + settings
+dev    = ["pytest>=7"]
+
+[project.scripts]
+flowlinux-inject = "flowlinux.cli:main"
+
+[tool.setuptools.packages.find]
+include = ["flowlinux*"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
