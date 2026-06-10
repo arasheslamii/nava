@@ -43,15 +43,17 @@ python3 -m venv .venv && . .venv/bin/activate
 pip install -e .[dev]
 sudo apt-get install -y xdotool xclip libnotify-bin      # system deps (X11)
 
-pip install -e ".[hotkey,audio,dev]"             # M2 deps (pynput, sounddevice, numpy)
+pip install -e ".[hotkey,audio,asr,bench,dev]"   # M2/M3 deps (pynput, sounddevice, faster-whisper, jiwer)
 
 echo "hello world" | flowlinux-inject            # M1: type via XTEST
 echo "hello world" | flowlinux-inject --paste     # M1: clipboard paste
 flowlinux record                                  # M2: hold Right-Ctrl to talk (PTT daemon)
-flowlinux record --mode toggle --once             # M2: toggle, capture one utterance
 flowlinux record --duration 2                     # M2: 2s mic test (no hotkey)
+flowlinux transcribe file.wav                     # M3: transcribe a file (--inject to type it)
+flowlinux dictate                                 # M3: hold Right-Ctrl -> speak -> text injected (MVP)
 flowlinux doctor                                  # diagnostics: injection + audio + hotkey
-pytest -q                                         # tests
+pytest -q                                         # tests (ASR integration gated by env var)
+FLOWLINUX_ASR_INTEGRATION=1 pytest tests/test_asr_integration.py   # silence/noise -> empty
 ```
 
 ## Conventions

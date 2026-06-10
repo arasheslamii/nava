@@ -114,3 +114,19 @@ PTT hotkey + 16 kHz capture loop, end-to-end verified.
 - **Bug caught by test:** `np.abs(int16(-32768))` overflows to -32768; peak now widens to int32.
 - **Privacy note:** M2 saves WAVs for development; M3+ will gate disk writes behind history-enabled.
 - 20 unit tests pass (injection 11 + hotkey 6 + audio 3).
+
+## M3 step 1 — CPU ASR baseline (2026-06-10)
+faster-whisper (CTranslate2 4.8, CPU int8, **small.en**) behind `ASRBackend`, wired into the
+full pipeline: hold Right-Ctrl → record → transcribe → inject (`flowlinux dictate`).
+- **Accuracy:** JFK public-domain clip → exact transcript incl. punctuation/casing.
+- **Latency (Haswell CPU):** 11.0 s audio → 4.93 s infer, **RTF 0.45** (faster than real time).
+  Typical ~5 s utterance ≈ ~2.5 s infer. Acceptable CPU baseline (accuracy > speed per ADR-0006).
+- **VAD + anti-hallucination:** bundled Silero VAD gating; beam 5; condition_on_previous_text=
+  False; no_speech/log_prob/compression thresholds; temperature fallback; plus `postprocess.py`
+  segment filter. **Silence AND white-noise → empty** (gated golden tests pass).
+- **End-to-end proofs (automated):** transcribe→inject exact (zenity readback); 4 s PTT hold →
+  3.98 s captured (no auto-repeat early-stop); `dictate --once` runs the whole chain.
+- **New CLI:** `flowlinux transcribe <file> [--inject]`, `flowlinux dictate` (MVP).
+- **Note on CT2 versions:** CPU uses CT2 4.x (fine). GPU on driver-470 needs CT2 **3.24** in a
+  separate env, or whisper.cpp-CUDA — M3 step 2. 29 tests (27 unit + 2 gated integration).
+- **Bug fixed:** `dictate`/DictationApp didn't forward `--once` (argparse exit 2); now wired.

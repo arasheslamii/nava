@@ -27,10 +27,22 @@ Build vertically — each milestone is end-to-end usable. Status: ✅ done · �
 - [x] **Acceptance:** live PTT via simulated Right-Ctrl → 1.3 s hold captured to valid
       16 kHz WAV; fixed-duration mic capture verified; 20 tests pass
 
-## M3 — Local ASR + benchmark ⬜
-- faster-whisper (CT2 3.24) AND whisper.cpp-CUDA behind one `ASRBackend`; Silero VAD;
-  anti-hallucination params; optional denoise (WER on/off). Latency dashboard (p50/p95).
-  **Benchmark picks default backend + GPU mode (int8 vs FP32) → lock in DECISIONS.md.**
+## M3 — Local ASR + benchmark 🔄
+**Step 1 — CPU baseline ✅ (proven end-to-end)**
+- [x] `ASRBackend` interface + `FasterWhisperBackend` (CT2; CPU int8, small.en)
+- [x] Silero VAD gating (bundled) + anti-hallucination params (beam 5,
+      condition_on_previous_text=False, no_speech/logprob thresholds, temperature fallback)
+- [x] `postprocess.py` hallucination filter (unit-tested) + silence/noise→empty golden (gated)
+- [x] `flowlinux transcribe <file>` (+ `--inject`) and `flowlinux dictate` (hold→speak→inject MVP)
+- [x] Proven: JFK clip → exact transcript (RTF 0.45 on CPU); transcribe→inject exact;
+      4 s PTT hold robust; silence→empty
+**Step 2 — GPU backends ⬜ (time-boxed)**
+- [ ] faster-whisper CT2 3.24 (GPU int8/fp32) on driver-470/cuDNN8 **and** whisper.cpp-CUDA,
+      behind the same interface; benchmark vs CPU; fall back gracefully if CT2+cuDNN8 fights
+      driver 470 (log it). **Stop for sudo CUDA-lib steps.**
+**Step 3 — Benchmark harness ⬜**
+- [ ] WER (jiwer) on LibriSpeech test-clean + personal set; latency p50/p95; optional denoise
+      WER on/off; **lock winning backend + GPU mode in DECISIONS.md.**
 
 ## M4 — Formatting ⬜
 - Tier-1 rules (fillers/punct/casing/dictionary) default; optional cloud LLM; A/B raw vs

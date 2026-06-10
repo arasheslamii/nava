@@ -18,11 +18,11 @@ dependencies = []
 # Installed per-milestone to keep idle footprint small (memory discipline — see PLAN.md).
 hotkey = ["pynput>=1.7"]                       # M2: X11 push-to-talk
 audio  = ["sounddevice>=0.4", "numpy>=1.24"]   # M2/M3: 16kHz capture
-# M3 ASR — EXACT PINS RESOLVED BY THE M3 BENCHMARK, intentionally unpinned here:
-#   GPU on driver-470 / CUDA-11 needs CTranslate2 3.24.x + a faster-whisper release
-#   targeting CT2 3.x (NOT CT2 4.x, which requires CUDA 12), OR whisper.cpp-CUDA built
-#   separately. Plus silero-vad and an optional denoise (noisereduce / RNNoise).
-asr    = []
+# M3 CPU baseline = faster-whisper (CT2 4.x runs fine on CPU). The GPU path on driver-470 /
+# CUDA-11 needs CTranslate2 3.24.x (CT2 4.x needs CUDA 12) OR whisper.cpp-CUDA, handled in a
+# separate env in M3 step 2 — see DECISIONS ADR-0005.
+asr    = ["faster-whisper>=1.0"]                # uses its bundled Silero VAD (onnxruntime)
+bench  = ["jiwer>=3"]                            # WER for the M3 benchmark harness
 tui    = ["rich>=13", "questionary>=2"]         # M5: terminal installer/config/diagnostics (no GUI)
 dev    = ["pytest>=7"]
 

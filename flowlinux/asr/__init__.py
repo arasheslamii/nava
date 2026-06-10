@@ -1,8 +1,12 @@
 """ASR backends (M3).
 
-Planned: one ASRBackend interface with FasterWhisper (CTranslate2 3.24, GPU int8 /
-CPU int8) AND WhisperCpp (GGML_CUDA), plus opt-in cloud (Groq/Deepgram). The M3
-benchmark picks the default on this Maxwell GPU and locks it in DECISIONS.md.
-Model is tiered by resolved compute path (GPU: distil-large-v3 int8; CPU: base/small).
-Stub until M3.
+`base.py` ASRBackend interface + result types; `faster_whisper_backend.py` (CT2; CPU
+baseline now, GPU in step 2); `postprocess.py` anti-hallucination filter; `factory.py`
+builder. whisper.cpp-CUDA + cloud backends slot in behind ASRBackend; the M3 benchmark
+picks the default (ADR-0005).
 """
+
+from .base import ASRBackend, Segment, TranscriptionResult
+from .factory import build_backend
+
+__all__ = ["ASRBackend", "Segment", "TranscriptionResult", "build_backend"]
