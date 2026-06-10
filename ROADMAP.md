@@ -36,13 +36,16 @@ Build vertically — each milestone is end-to-end usable. Status: ✅ done · �
 - [x] `flowlinux transcribe <file>` (+ `--inject`) and `flowlinux dictate` (hold→speak→inject MVP)
 - [x] Proven: JFK clip → exact transcript (RTF 0.45 on CPU); transcribe→inject exact;
       4 s PTT hold robust; silence→empty
-**Step 2 — GPU backends ⬜ (time-boxed)**
-- [ ] faster-whisper CT2 3.24 (GPU int8/fp32) on driver-470/cuDNN8 **and** whisper.cpp-CUDA,
-      behind the same interface; benchmark vs CPU; fall back gracefully if CT2+cuDNN8 fights
-      driver 470 (log it). **Stop for sudo CUDA-lib steps.**
-**Step 3 — Benchmark harness ⬜**
-- [ ] WER (jiwer) on LibriSpeech test-clean + personal set; latency p50/p95; optional denoise
-      WER on/off; **lock winning backend + GPU mode in DECISIONS.md.**
+**Step 2 — GPU evaluation ✅ (CPU wins, locked — ADR-0009)**
+- [x] CT2 3.24 + CUDA 11/cuDNN 8 via pip (`.venv-gpu`, **no sudo**); sidestepped av source-build
+- [x] Benchmarked: GPU int8/fp16 unsupported on Maxwell CC 5.0; GPU float32 RTF 1.81 vs
+      **CPU int8 RTF 0.45** → **default = CPU small.en int8**. whisper.cpp-CUDA not pursued
+      (CUDA-11 toolkit = sudo + driver-470 incompat; CPU already wins). Abstraction kept for
+      modern-GPU machines.
+**Step 3 — WER benchmark harness ✅ built / 🔄 full run pending data**
+- [x] `bench/run_bench.py`: WER (jiwer, normalized) + latency p50/p95 + per-category; validated
+- [ ] Full run on personal set (recording) + LibriSpeech test-clean; tune CPU model
+      (small.en vs base.en vs distil) + optional denoise WER on/off
 
 ## M4 — Formatting ⬜
 - Tier-1 rules (fillers/punct/casing/dictionary) default; optional cloud LLM; A/B raw vs

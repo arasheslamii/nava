@@ -130,3 +130,25 @@ full pipeline: hold Right-Ctrl → record → transcribe → inject (`flowlinux 
 - **Note on CT2 versions:** CPU uses CT2 4.x (fine). GPU on driver-470 needs CT2 **3.24** in a
   separate env, or whisper.cpp-CUDA — M3 step 2. 29 tests (27 unit + 2 gated integration).
 - **Bug fixed:** `dictate`/DictationApp didn't forward `--once` (argparse exit 2); now wired.
+
+## ADR-0009 — Benchmark verdict: CPU is the default ASR on this machine (2026-06-10)
+M3 step 2 evaluated the GPU path (GTX 960M, CT2 3.24, CUDA 11 + cuDNN 8 installed via pip
+`nvidia-*-cu11` into a separate `.venv-gpu` — **no sudo**). Findings on jfk.flac (11.0 s audio):
+- **GPU int8 / float16: UNSUPPORTED** — Maxwell CC 5.0 has no dp4a/IMMA int8 and no fast fp16
+  (CT2: "device does not support efficient int8/float16 computation").
+- **GPU float32: works, RTF 1.81** (19.9 s infer) — correct transcript but ~4× slower than CPU.
+- **CPU small.en int8: RTF 0.45** (4.9 s infer), identical accuracy.
+
+**Decision: default backend = CPU faster-whisper `small.en` int8.** The GPU is a net loss on this
+card. **whisper.cpp-CUDA not pursued:** needs a CUDA-11 toolkit to compile (sudo; Ubuntu 24.04
+ships CUDA 12, incompatible with driver 470), Maxwell stays fp16-limited, and CPU already wins —
+avoiding the time sink (user guidance + ADR-0005). This resolves ADR-0005's "benchmark decides".
+GPU eval env kept at `.venv-gpu` for reference (gitignored); the shipped app uses the CPU `.venv`
+(CT2 4.x). On a *modern* GPU machine the GPU path would win — the abstraction stays in place.
+
+## M3 step 2 — GPU evaluation (2026-06-10)
+- Sidestepped a sudo wall: `av` had no cp312 wheel and tried to build from source (needs ffmpeg
+  dev headers) → switched audio decoding to `soundfile` + prebuilt `av` wheel. No sudo used.
+- cuDNN pitfall: `nvidia-cudnn-cu11` now resolves to **9.x**; CT2 3.24 needs **8.x** → pinned
+  `nvidia-cudnn-cu11==8.9.6.50` (libcudnn.so.8). LD_LIBRARY_PATH points at the pip nvidia libs.
+- Net: GPU stack *runs* (float32) but loses to CPU; see ADR-0009. ASR default stays CPU.

@@ -21,7 +21,7 @@ audio  = ["sounddevice>=0.4", "numpy>=1.24"]   # M2/M3: 16kHz capture
 # M3 CPU baseline = faster-whisper (CT2 4.x runs fine on CPU). The GPU path on driver-470 /
 # CUDA-11 needs CTranslate2 3.24.x (CT2 4.x needs CUDA 12) OR whisper.cpp-CUDA, handled in a
 # separate env in M3 step 2 — see DECISIONS ADR-0005.
-asr    = ["faster-whisper>=1.0"]                # uses its bundled Silero VAD (onnxruntime)
+asr    = ["faster-whisper>=1.0", "soundfile>=0.12"]  # bundled Silero VAD; soundfile decodes audio
 bench  = ["jiwer>=3"]                            # WER for the M3 benchmark harness
 tui    = ["rich>=13", "questionary>=2"]         # M5: terminal installer/config/diagnostics (no GUI)
 dev    = ["pytest>=7"]
