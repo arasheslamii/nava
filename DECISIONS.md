@@ -80,8 +80,21 @@ Env: Linux Mint 22, Cinnamon/X11, xdotool 3.20160805.1, xclip, xprop, libnotify.
    terminals misdetected (wrong paste key). Fix: read WM_CLASS via `xprop` and match res_name
    OR res_class. Added xprop (x11-utils) to preflight.
 
-**Manual checklist (human visual confirmation in live apps) — pending:**
-Firefox text field, VS Code editor, an Electron chat app, LibreOffice Writer. Procedure:
-`printf 'FlowLinux M1 ✓ café' | flowlinux-inject --wait 2` then focus the app (and the
-`--paste` variant). These are the same "normal app" code path proven by zenity; any quirks
-will be logged here.
+**GUI app checklist (automated via inject → select-all → copy → read-back) — DONE:**
+- **Firefox** (Gecko, URL bar): type ✅ — clipboard read-back exact.
+- **VS Code** (Electron/Chromium editor): type ✅ — saved-file read-back exact incl. "café ✓".
+  Covers the "Electron chat app" case (same Chromium text widget; no chat app installed).
+- **LibreOffice Writer** (VCL): type delivered text but **dropped the trailing `✓` (U+2713)**;
+  **paste delivered the full Unicode string intact** ✅. WM_CLASS "libreoffice-writer" → Ctrl+V.
+
+**Finding:** XTEST typing (xdotool) drops uncommon Unicode (remapped-keycode limitation);
+clipboard-paste is Unicode-safe. → see ADR-0008 (auto-routing). Accented Latin (é) typed fine
+everywhere; only the symbol glyph was lost.
+
+## ADR-0008 — Injection `auto` routing: paste for non-trivial text (2026-06-10)
+M1 GUI acceptance showed XTEST typing drops uncommon Unicode (U+2713 ✓ lost in LibreOffice).
+Since a dictation transcript can contain arbitrary Unicode, `InjectionManager` with `method=
+"auto"` now routes to the **clipboard-paste** path (instant, Unicode-safe) when the text is
+multiline, longer than 40 chars, or contains any non-ASCII char; short pure-ASCII still types
+first (feels native). Escalation and the notify fallback are unchanged. `prefer_paste()` is
+unit-tested. Explicit `--method type|paste` still force the order.

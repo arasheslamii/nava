@@ -8,7 +8,7 @@ import shutil
 import pytest
 
 from flowlinux.injection.base import HealthStatus, InjectionResult, Injector
-from flowlinux.injection.manager import InjectionManager
+from flowlinux.injection.manager import InjectionManager, prefer_paste
 from flowlinux.injection.window import (
     TERMINAL_WM_CLASSES,
     ActiveWindow,
@@ -75,6 +75,34 @@ def test_skips_unhealthy_backend_without_calling_it():
     res = mgr.inject("hi", method="auto")
     assert res.ok and res.backend == "paste"
     assert t.calls == 0
+
+
+def test_prefer_paste_heuristic():
+    assert prefer_paste("hi") is False          # short ASCII -> type
+    assert prefer_paste("café") is True          # non-ASCII -> paste (XTEST drops glyphs)
+    assert prefer_paste("done ✓") is True         # symbol -> paste
+    assert prefer_paste("line1\nline2") is True   # multiline -> paste
+    assert prefer_paste("x" * 41) is True         # long -> paste
+
+
+def test_auto_routes_unicode_to_paste_first():
+    mgr = InjectionManager()
+    t = _Fake("type", True, True)
+    p = _Fake("paste", True, True)
+    n = _Fake("notify", True, True)
+    _wire(mgr, t, p, n)
+    res = mgr.inject("café ✓ long transcript here", method="auto")
+    assert res.backend == "paste" and t.calls == 0  # never typed exotic Unicode
+
+
+def test_auto_types_short_ascii_first():
+    mgr = InjectionManager()
+    t = _Fake("type", True, True)
+    p = _Fake("paste", True, True)
+    n = _Fake("notify", True, True)
+    _wire(mgr, t, p, n)
+    res = mgr.inject("ok", method="auto")
+    assert res.backend == "type" and p.calls == 0
 
 
 def test_paste_method_orders_paste_first():
