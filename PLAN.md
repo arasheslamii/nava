@@ -122,23 +122,25 @@ All tiers are **skippable (raw mode)** and gated by utterance length (skip LLM f
 
 ---
 
-## E. App shell & language
+## E. App shell & language — **terminal-first (no GUI)**
 
-**Recommendation: all-Python core + Qt (PySide6) UI.**
-- **Why Python core:** the entire ML stack (faster-whisper, Silero, llama.cpp bindings, sounddevice) is Python-first → fastest iteration, which matters most given the hardware tuning ahead. On X11 there is **no need for a Rust injection helper** (xdotool/pynput cover it), which removes the main reason to go polyglot.
-- **UI/tray:** PySide6 — `QSystemTrayIcon` speaks StatusNotifierItem, which Cinnamon's native systray supports. Settings window in the same toolkit.
-- **Daemon:** long-running `systemd --user` service + XDG autostart entry. Idle RAM (Python + Qt, model unloaded) ≈ 80–150 MB — within the <300 MB goal.
-- **Rejected:** Rust-core + Tauri (slows ML iteration, buys little when injection is trivial on X11); Python + Rust helper (unnecessary complexity here).
-
-> This is a genuine fork — see Question 1. If you prefer Rust/Tauri for the shell, the plan adapts (Python ML sidecar + Tauri UI).
+**Decision: all-Python core + a polished terminal UI (Rich + questionary). No Qt/GUI window.** (Supersedes the earlier PySide6 choice — see DECISIONS ADR-0007.)
+- **Why Python core:** the entire ML stack (faster-whisper, Silero, llama.cpp bindings, sounddevice) is Python-first → fastest iteration. On X11 there is **no Rust injection helper** needed, so the stack stays single-language.
+- **No GUI.** Install, config, and first-run setup are all **terminal-based**: a styled TUI installer (banner/ASCII logo, colors, spinners, live download progress bars) via **`rich`**, with interactive prompts via **`questionary`** (Textual reserved for richer full-screen views if ever needed). A graphical window is **rejected** — it adds weight and contradicts the desired "cool terminal setup" UX.
+- **Runtime = headless daemon.** Long-running `systemd --user` service + XDG autostart. Usage is pure push-to-talk (hold Right-Ctrl → speak → release → inject), exactly like Wispr Flow. No window.
+- **Status feedback without a window:** primary cue = desktop notification (libnotify) + optional sound and/or a small terminal overlay on start/stop listening. A tray icon (StatusNotifierItem) is kept **only if trivial**, never required. `flowlinux status` reports daemon state.
+- **Config:** hand-editable TOML at `~/.config/flowlinux/config.toml`, plus a `flowlinux config` TUI to edit it interactively.
+- **CLI verbs:** `flowlinux start|stop|status|config|doctor|model <download|switch>` (alongside the existing `flowlinux-inject`).
+- **Bonus:** dropping Qt cuts idle RAM well under the <300 MB goal (~40–90 MB, model unloaded) — welcome on this memory-tight machine.
+- **Rejected:** PySide6/Qt GUI (superseded); Rust-core + Tauri; Python + Rust helper.
 
 ---
 
 ## F. Audio capture
 
 **Recommendation:** `sounddevice` (PortAudio) capturing **16 kHz mono** through PipeWire-Pulse.
-- Input level indicator via RMS; "listening" cue = tray icon state change + optional small Qt overlay near cursor.
-- Device hotplug: subscribe to PipeWire/Pulse events (or periodic re-enumerate); device picker in settings.
+- Input level indicator via RMS; "listening" cue = **desktop notification + optional sound / small terminal overlay** (no GUI).
+- Device hotplug: subscribe to PipeWire/Pulse events (or periodic re-enumerate); device picker in the `flowlinux config` TUI.
 - Audio **never written to disk** unless history is explicitly enabled.
 
 ---
@@ -150,11 +152,12 @@ Ordered for *this* machine's ecosystem (Mint/Ubuntu):
 2. **AppImage** (portable) — bundle Python via python-appimage.
 3. **AUR** + **Flatpak** later. Flatpak note: sandbox fights uinput/evdev *and* X11 synthetic input — documented tradeoff; not first.
 
-**First-run wizard handles the ugly parts:**
+**`install.sh` bootstrap + TUI first-run wizard handle the ugly parts (all in the terminal):**
+- `install.sh`: create venv, install the package, set up the `systemd --user` service + autostart, then launch the TUI wizard.
 - Detect X11 (✓ here) → skip the whole Wayland/uinput/input-group setup.
-- `apt install xdotool` if missing; verify xclip.
-- GPU probe: detect driver 470/CUDA 11.4 → offer GPU (CT2 3.24 + cuDNN8) or CPU path; download the recommended model for the chosen path with progress.
-- Built-in **"test injection here" textbox** + **diagnostics panel** (X11 ✓, xdotool ✓, clipboard ✓, GPU/CUDA, mic capture, latency self-test).
+- `apt install xdotool xclip x11-utils` if missing; verify them.
+- GPU probe: detect driver 470/CUDA 11.4 → offer GPU (CT2 3.24 + cuDNN8) or CPU path; **download the chosen model with a live Rich progress bar.**
+- Styled diagnostics self-test (X11 ✓, xdotool ✓, clipboard ✓, GPU/CUDA, mic capture, latency) + a **"type here to test injection" terminal prompt** — all as colored terminal output, no window.
 
 ---
 
@@ -166,16 +169,18 @@ flowlinux/
 ├─ DECISIONS.md              # ADR-style append-only log
 ├─ PLAN.md                   # this file
 ├─ ROADMAP.md                # milestone tracker
-├─ pyproject.toml            # deps, entry points (flowlinuxd, flowlinux-inject)
+├─ pyproject.toml            # deps, entry points (flowlinux, flowlinux-inject)
+├─ install.sh                # bootstrap: venv + install + systemd user service + launch TUI wizard
 ├─ flowlinux/
-│  ├─ core/                  # daemon, state machine, config
+│  ├─ core/                  # daemon, state machine, config (TOML)
 │  ├─ injection/             # Injector iface; XdotoolInjector, ClipboardInjector, (WaylandInjector stub)
 │  ├─ hotkey/                # Hotkey iface; PynputX11Hotkey, (EvdevHotkey stub)
 │  ├─ audio/                 # capture (sounddevice), VAD (Silero), level meter
 │  ├─ asr/                   # ASRBackend iface; FasterWhisper(CT2 3.24), WhisperCpp, Groq, Deepgram
 │  ├─ format/               # FormatterTier1(rules), FormatterCloud, FormatterLocalLLM; dictionary
-│  ├─ ui/                    # PySide6 tray + settings + first-run wizard + diagnostics
-│  └─ diagnostics/           # health checks surfaced in UI
+│  ├─ tui/                   # Rich/questionary installer + config editor + diagnostics + status (NO GUI)
+│  ├─ cli.py                 # `flowlinux` verbs (start|stop|status|config|doctor|model) + flowlinux-inject
+│  └─ diagnostics/           # health checks surfaced in the TUI
 ├─ bench/                    # WER + latency harness (LibriSpeech + personal set)
 ├─ packaging/                # deb/, appimage/, systemd user unit, autostart
 └─ tests/                    # formatter golden pairs, injection integration
@@ -201,14 +206,14 @@ flowlinux/
 - **M2** Hotkey (pynput, Right-Ctrl PTT) + audio loop (sounddevice 16 kHz) + visual/beep cue → save WAV.
 - **M3** Local ASR: faster-whisper (CT2 3.24, GPU int8) **and** whisper.cpp-CUDA behind one interface + Silero VAD; key-release → raw text injected; **latency dashboard** (p50/p95). Pick default backend by benchmark.
 - **M4** Formatting: Tier-1 rules (fillers/punct/dictionary) default + optional cloud LLM; A/B raw vs formatted in history; golden-pair unit tests.
-- **M5** Tray + settings UI + first-run wizard + diagnostics.
+- **M5** **TUI installer + config + diagnostics** (Rich/questionary): `install.sh` bootstrap, styled first-run wizard (env detect, dep install, GPU probe, model download with progress bar, diagnostics self-test), `flowlinux config` TOML editor, `flowlinux status`. No GUI.
 - **M6** Polish: per-app tone, paste-last-transcript hotkey, multilingual (if chosen), command-mode stretch.
 - **M7** Packaging: .deb + AppImage + systemd user service + docs.
 
 ---
 
 ## Locked decisions (resolved 2026-06-10)
-1. **Shell/language:** ✅ **All-Python + PySide6.** Single stack, portable, production-ready on any Linux machine; no Rust helper needed on X11.
+1. **Shell/language:** ✅ **All-Python + terminal UI (Rich + questionary). No GUI.** Single stack, portable; headless daemon at runtime, styled TUI for install/config/diagnostics. (Updated 2026-06-10 — superseded PySide6/Qt; see ADR-0007.)
 2. **Cloud backends:** ✅ **Opt-in, off by default.** Fully offline out of the box; Groq/Deepgram ASR + cloud LLM formatter available when the user enables them.
 3. **Local ASR compute:** ✅ **Best-available-path selection at startup (health-check driven), GPU default on this machine.** Build BOTH `faster-whisper` (CT2 3.24) and `whisper.cpp`-CUDA behind one `ASRBackend`; **the M3 benchmark picks the default and locks it in DECISIONS.md.** CPU int8 is the universal fallback when the GPU health check fails. GPU libs optional via first-run wizard.
    - ⚠️ **Maxwell hardware fact:** GTX 960M is GM107, **compute capability 5.0** — **no dp4a/IMMA int8 acceleration** (Pascal CC 6.1+ only) and **no fast FP16**. So CT2 int8-on-GPU may NOT be ~2x and may be flaky/slow. Benchmark int8 **and FP32** GPU modes; FP32 may be the most stable even if slower. Expect whisper.cpp-CUDA may win — let data decide.

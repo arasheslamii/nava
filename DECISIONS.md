@@ -18,10 +18,10 @@ paste key chosen by active-window WM_CLASS (terminals → Ctrl+Shift+V, else Ctr
 **Rejected for now:** the Wayland ladder (wtype/ydotool/wl-copy), uinput/evdev, input-group
 setup — not needed on X11. Kept behind the `Injector` interface for a future Wayland session.
 
-## ADR-0003 — All-Python core + PySide6 UI (2026-06-10)
+## ADR-0003 — All-Python core; no Rust helper (2026-06-10)
 Single Python stack; no Rust injection helper (X11 makes injection trivial, and Python
-maximizes ML iteration speed, which dominates this project). PySide6 tray/UI speaks
-StatusNotifierItem (Cinnamon supports it). **Rejected:** Rust+Tauri, Python+Rust helper.
+maximizes ML iteration speed, which dominates this project). **Rejected:** Rust+Tauri,
+Python+Rust helper. *(UI choice superseded by ADR-0007 — terminal-first, no Qt.)*
 
 ## ADR-0004 — Cloud backends opt-in, off by default (2026-06-10)
 Local/offline is the default and the privacy stance. Groq/Deepgram ASR and cloud LLM
@@ -46,6 +46,21 @@ fallback), optional pre-model denoise kept only if M3 shows a WER win, and a sil
 golden test. Safety: offline default, no telemetry, audio off-disk unless history enabled,
 health checks + degraded-mode fallbacks everywhere, crash-resilient daemon, lazy model load,
 never both local-LLM and Whisper in memory (Tier-3 local LLM OFF on this box).
+
+## ADR-0007 — Terminal-first UX; no GUI (supersedes the UI part of ADR-0003) (2026-06-10)
+Drop PySide6/Qt entirely. Install, config, and first-run setup are a **polished terminal
+UI**: `rich` for banner/colors/spinners/progress bars, `questionary` for interactive prompts
+(Textual reserved for richer full-screen views if needed). An `install.sh` bootstraps the
+venv + package + `systemd --user` service + autostart, then launches the TUI wizard.
+**Runtime is a headless daemon** — no window. Usage = hold Right-Ctrl to talk, release to
+inject (Wispr-style). Status without a window: libnotify desktop notification + optional
+sound / small terminal overlay on start/stop; tray icon kept only if trivial. Config is
+hand-editable TOML at `~/.config/flowlinux/config.toml` with a `flowlinux config` TUI. CLI
+verbs: `flowlinux start|stop|status|config|doctor|model <download|switch>`.
+**Why:** matches the desired "cool terminal setup" UX, removes GUI weight, and lowers idle
+RAM (~40–90 MB vs ~80–150 with Qt) on this memory-tight machine. **Consequence:** M5 becomes
+"TUI installer + config + diagnostics" instead of a Qt window; everything else (model tiering,
+Whisper+VAD, noise handling, packaging) is unchanged.
 
 ## M1 acceptance results (2026-06-10)
 Env: Linux Mint 22, Cinnamon/X11, xdotool 3.20160805.1, xclip, xprop, libnotify.

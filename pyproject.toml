@@ -23,7 +23,7 @@ audio  = ["sounddevice>=0.4", "numpy>=1.24"]   # M2/M3: 16kHz capture
 #   targeting CT2 3.x (NOT CT2 4.x, which requires CUDA 12), OR whisper.cpp-CUDA built
 #   separately. Plus silero-vad and an optional denoise (noisereduce / RNNoise).
 asr    = []
-ui     = ["PySide6>=6.6"]                       # M5: tray + settings
+tui    = ["rich>=13", "questionary>=2"]         # M5: terminal installer/config/diagnostics (no GUI)
 dev    = ["pytest>=7"]
 
 [project.scripts]

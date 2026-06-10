@@ -29,6 +29,10 @@ Build vertically — each milestone is end-to-end usable. Status: ✅ done · �
 - Tier-1 rules (fillers/punct/casing/dictionary) default; optional cloud LLM; A/B raw vs
   formatted in history; golden-pair tests incl. "silence in → empty out".
 
-## M5 — Tray + settings + first-run wizard ⬜
+## M5 — TUI installer + config + diagnostics ⬜ (no GUI)
+- `install.sh` bootstrap (venv + package + systemd user service + autostart); Rich/questionary
+  first-run wizard (env detect, dep install, GPU probe, model download w/ progress bar,
+  diagnostics self-test + test-injection prompt); `flowlinux config` TOML editor; `flowlinux
+  status`. CLI verbs: start|stop|status|config|doctor|model.
 ## M6 — Polish (per-app tone, paste-last-transcript, multilingual stretch) ⬜
 ## M7 — Packaging (.deb, AppImage, AUR, systemd user service) ⬜

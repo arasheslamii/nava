@@ -9,7 +9,10 @@ Linux Mint 22 (Ubuntu 24.04 base) · Cinnamon on **X11** · PipeWire · i7-4720H
 Full environment + rationale in [PLAN.md](PLAN.md).
 
 ## Architecture (locked — see DECISIONS.md)
-- **All-Python core + PySide6 UI.** No Rust helper (X11 makes injection trivial).
+- **All-Python core + terminal UI (Rich + questionary). No GUI.** Headless `systemd --user`
+  daemon at runtime; styled TUI for install/config/diagnostics. No Rust helper (X11 makes
+  injection trivial). CLI verbs: `flowlinux start|stop|status|config|doctor|model`.
+  Config: TOML at `~/.config/flowlinux/config.toml`. Status cue: libnotify + optional sound.
 - **Injection:** XTEST typing (xdotool) primary → clipboard-paste (xclip) → notify. Behind
   an `Injector` interface; a `WaylandInjector` slots in later.
 - **Hotkey:** pynput X11 monitor, Right-Ctrl push-to-talk (M2).
@@ -18,6 +21,7 @@ Full environment + rationale in [PLAN.md](PLAN.md).
   picks the default.** Model tiered by path (GPU: distil-large-v3 int8; CPU: base/small).
 - **Formatting:** Tier-1 rules default; Tier-2 cloud LLM opt-in; Tier-3 local LLM off here.
 - **Cloud:** opt-in, off by default.
+- **UX:** terminal-first (ADR-0007) — no Qt/GUI window; install/config/diagnostics via TUI.
 
 ## Priorities (resolve tradeoffs in this order)
 1. English accuracy → 2. noise robustness → 3. reliability/safety → 4. speed.
@@ -27,7 +31,7 @@ Full environment + rationale in [PLAN.md](PLAN.md).
 flowlinux/
   injection/   # M1 — Injector iface, xdotool/clipboard/notify backends, manager, window, preflight
   cli.py       # M1 — `flowlinux-inject`
-  core/ hotkey/ audio/ asr/ format/ ui/ diagnostics/   # stubs, filled per milestone
+  core/ hotkey/ audio/ asr/ format/ tui/ diagnostics/  # stubs, filled per milestone (tui = Rich/questionary, no GUI)
 bench/          # M3+ WER + latency harness
 packaging/      # M7 deb/appimage/systemd
 tests/          # pytest
