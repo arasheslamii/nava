@@ -152,3 +152,10 @@ GPU eval env kept at `.venv-gpu` for reference (gitignored); the shipped app use
 - cuDNN pitfall: `nvidia-cudnn-cu11` now resolves to **9.x**; CT2 3.24 needs **8.x** → pinned
   `nvidia-cudnn-cu11==8.9.6.50` (libcudnn.so.8). LD_LIBRARY_PATH points at the pip nvidia libs.
 - Net: GPU stack *runs* (float32) but loses to CPU; see ADR-0009. ASR default stays CPU.
+
+## M3 step 3 — WER benchmark (LibriSpeech; personal set pending) (2026-06-10)
+LibriSpeech test-clean (100-utterance subset), CPU `small.en` int8:
+- **WER 3.20%**, latency p50 2.83 s / p95 4.18 s, mean RTF 0.47 — strong on clean English.
+- Personal 20-utterance set (plain/jargon/noisy incl. "MAAD Capital", ML terms) to be recorded
+  by user; then small.en vs medium.en (accuracy + RTF) decides the locked CPU model. Harness:
+  `python bench/run_bench.py --dataset {personal:<dir>|librispeech:<dir>} --configs <specs>`.
