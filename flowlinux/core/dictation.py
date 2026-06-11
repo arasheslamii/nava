@@ -24,7 +24,7 @@ class DictationApp:
         device=None,
         inject: bool = True,
         method: str = "auto",
-        feedback_enabled: bool = True,
+        cues: str = "off",
         save_audio: bool = False,
         once: bool = False,
         formatter: Formatter | None = None,
@@ -34,9 +34,9 @@ class DictationApp:
         self.inject = inject
         self.method = method
         self.formatter = formatter
-        self.feedback_enabled = feedback_enabled
+        self.cues = cues
         self.recorder_app = RecorderApp(
-            mode=mode, key=key, device=device, feedback_enabled=feedback_enabled,
+            mode=mode, key=key, device=device, cues=cues,
             save=save_audio, once=once, on_utterance=self._on_utterance,
         )
 
@@ -56,7 +56,7 @@ class DictationApp:
                 print(f"[fmt] {', '.join(fr.notes) or 'cleaned'} → {fr.text!r}")
             text = fr.text
         if not text:
-            if self.feedback_enabled:
+            if self.cues == "full":
                 feedback.notify("FlowLinux", "(no speech detected)")
             return
         if not self.inject:
@@ -64,7 +64,7 @@ class DictationApp:
         res = self.injector.inject(text, method=self.method)
         if not res.ok:
             print(f"[inject] FAILED: {res.detail}")
-            if self.feedback_enabled:
+            if self.cues == "full":
                 feedback.notify("FlowLinux", f"inject failed: {res.detail}")
 
     def run(self) -> None:

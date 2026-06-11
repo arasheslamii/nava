@@ -5,7 +5,7 @@ PartOf=graphical-session.target
 
 [Service]
 Type=simple
-ExecStart=@FLOWLINUX@ start
+ExecStart=@FLOWLINUX@ _run
 Restart=on-failure
 RestartSec=3
 # X11 is required for injection + hotkey; templated by install.sh from the install session.

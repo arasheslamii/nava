@@ -25,8 +25,7 @@ def apply_answers(cfg: Config, answers: dict) -> Config:
     cfg.hotkey.key = answers["key"]
     cfg.hotkey.mode = answers["mode"]
     cfg.formatting.enabled = answers["formatting"]
-    cfg.feedback.sound = answers["cues"]
-    cfg.feedback.notify = answers["cues"]
+    cfg.feedback.cues = answers["cues"]
     cfg.cloud.enabled = answers["cloud"]
     return cfg
 
@@ -52,12 +51,18 @@ def _prompt(current: Config) -> dict | None:
     formatting = questionary.confirm(
         "Enable Tier-1 formatting (filler removal + custom dictionary)?",
         default=current.formatting.enabled).ask()
-    cues = questionary.confirm("Sound + desktop-notification cues?",
-                               default=current.feedback.sound).ask()
+    cues = questionary.select(
+        "Feedback cues",
+        choices=["off (silent, recommended)", "sound-only (one quiet beep)", "full (beeps + notifications)"],
+        default={"off": "off (silent, recommended)",
+                 "sound-only": "sound-only (one quiet beep)",
+                 "full": "full (beeps + notifications)"}.get(current.feedback.cues,
+                                                             "off (silent, recommended)")).ask()
     cloud = questionary.confirm("Enable cloud backends? (opt-in, off by default)",
                                 default=current.cloud.enabled).ask()
     if None in (key, mode, formatting, cues, cloud):
         return None
+    cues = cues.split()[0]  # "off" | "sound-only" | "full"
     return {"model": MODEL_CHOICES[model], "key": KEY_CHOICES[key], "mode": mode,
             "formatting": formatting, "cues": cues, "cloud": cloud}
 

@@ -33,11 +33,11 @@ def beep_async(frequency: float = 880, duration: float = 0.10, volume: float = 0
 
 
 def start_cue() -> None:
-    beep_async(frequency=880, duration=0.10)   # rising "listening"
+    beep_async(frequency=880, duration=0.07, volume=0.14)   # single quiet "listening"
 
 
 def stop_cue() -> None:
-    beep_async(frequency=520, duration=0.10)   # lower "done"
+    beep_async(frequency=520, duration=0.07, volume=0.14)   # lower "done"
 
 
 def notify(title: str, message: str = "") -> None:

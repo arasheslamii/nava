@@ -30,19 +30,11 @@ pip install -q -e ".[hotkey,audio,asr,tui]"
 
 BIN="$(pwd)/.venv/bin/flowlinux"
 
-# 3) systemd --user service
-if command -v systemctl >/dev/null 2>&1; then
-  echo "==> Installing systemd --user service"
-  mkdir -p "$HOME/.config/systemd/user"
-  sed -e "s|@FLOWLINUX@|$BIN|g" -e "s|@DISPLAY@|${DISPLAY:-:0}|g" \
-      packaging/flowlinux.service.in > "$HOME/.config/systemd/user/flowlinux.service"
-  systemctl --user daemon-reload || true
-  echo "   Enable autostart later with: systemctl --user enable --now flowlinux"
-else
-  echo "==> systemd not found; you can run the daemon with: $BIN start"
-fi
-
-# 4) first-run wizard
+# 3) first-run wizard (the systemd --user unit is installed on first `flowlinux start`)
 echo "==> Launching setup wizard"
 "$BIN" setup || true
-echo "==> Done. Try: $BIN dictate"
+
+echo "==> Done."
+echo "   • Try it now:        $BIN dictate"
+echo "   • Background daemon:  $BIN start         (survives closing the terminal)"
+echo "   • Auto-start on login: $BIN enable"

@@ -30,7 +30,7 @@ class RecorderApp:
         key: str = "ctrl_r",
         device=None,
         out_dir: Optional[Path] = None,
-        feedback_enabled: bool = True,
+        cues: str = "off",
         save: bool = True,
         once: bool = False,
         on_utterance: Optional[Callable[[Recording, Optional[Path]], None]] = None,
@@ -41,7 +41,7 @@ class RecorderApp:
         self.key = self.hotkey.key_name
         self.mode = PTTMode(mode)
         self.out_dir = Path(out_dir) if out_dir else default_out_dir()
-        self.feedback_enabled = feedback_enabled
+        self.cues = cues  # off | sound-only | full
         self.save = save
         self.once = once
         self.on_utterance = on_utterance
@@ -49,16 +49,25 @@ class RecorderApp:
         self.last_path: Optional[Path] = None
         self.last_recording: Optional[Recording] = None
 
+    @property
+    def _play_start(self) -> bool:
+        return self.cues in ("sound-only", "full")
+
+    @property
+    def _full(self) -> bool:
+        return self.cues == "full"
+
     # --- PTT callbacks (run on the hotkey listener thread) ---
     def _on_start(self) -> None:
-        if self.feedback_enabled:
+        if self._play_start:
             feedback.start_cue()
+        if self._full:
             feedback.notify("FlowLinux", "Listening…")
         try:
             self.recorder.start()
         except Exception as e:  # mic failure must not crash the daemon
             print(f"[flowlinux] capture failed to start: {e}")
-            if self.feedback_enabled:
+            if self._full:
                 feedback.notify("FlowLinux", f"Mic error: {e}")
 
     def _on_stop(self) -> None:
@@ -67,7 +76,7 @@ class RecorderApp:
         except Exception as e:
             print(f"[flowlinux] capture stop failed: {e}")
             return
-        if self.feedback_enabled:
+        if self._full:
             feedback.stop_cue()
         path: Optional[Path] = None
         if self.save and rec.duration_s > 0:
@@ -79,7 +88,7 @@ class RecorderApp:
         self.last_path = path
         msg = f"{rec.duration_s:.1f}s, peak {rec.peak}" + (f" → {path.name}" if path else "")
         print(f"[flowlinux] captured {msg}")
-        if self.feedback_enabled:
+        if self._full:
             feedback.notify("FlowLinux", f"Captured {msg}")
         if self.on_utterance is not None:
             try:

@@ -35,7 +35,7 @@ def _cmd_record(args) -> int:
         key=args.key,
         device=args.device,
         out_dir=Path(args.out_dir) if args.out_dir else None,
-        feedback_enabled=not args.no_feedback,
+        cues=("off" if args.no_feedback else args.cues),
         save=not args.no_save,
         once=args.once,
     )
@@ -82,8 +82,8 @@ def _cmd_dictate(args) -> int:
     app = DictationApp(
         backend=backend, mode=PTTMode(args.mode), key=args.key, device=args.audio_device,
         inject=not args.no_inject, method=args.method,
-        feedback_enabled=not args.no_feedback, save_audio=args.save_audio, once=args.once,
-        formatter=formatter,
+        cues=("off" if args.no_feedback else args.cues), save_audio=args.save_audio,
+        once=args.once, formatter=formatter,
     )
     app.run()
     return 0
@@ -119,13 +119,16 @@ def _cmd_status(args) -> int:  # noqa: ARG001
         c = Config.load()
         print(f"  model   : {c.asr.model} ({c.asr.device}/{c.asr.compute_type})")
         print(f"  hotkey  : {c.hotkey.key} [{c.hotkey.mode}]   formatting: "
-              f"{'on' if c.formatting.enabled else 'off'}   cloud: "
-              f"{'on' if c.cloud.enabled else 'off'}")
+              f"{'on' if c.formatting.enabled else 'off'}   cues: {c.feedback.cues}   "
+              f"cloud: {'on' if c.cloud.enabled else 'off'}")
     print(f"  daemon  : {status_text()}")
     return 0
 
 
-def _cmd_start(args) -> int:  # noqa: ARG001
+def _cmd_run(args) -> int:  # noqa: ARG001
+    """Foreground, config-driven dictation daemon — what systemd's ExecStart runs."""
+    import signal
+
     from .asr.factory import build_backend
     from .core.config import Config
     from .core.dictation import DictationApp
@@ -139,10 +142,35 @@ def _cmd_start(args) -> int:  # noqa: ARG001
     app = DictationApp(
         backend=backend, mode=PTTMode(c.hotkey.mode), key=c.hotkey.key,
         device=(c.audio.device or None), method=c.injection.method,
-        feedback_enabled=(c.feedback.sound or c.feedback.notify), formatter=formatter,
+        cues=c.feedback.cues, formatter=formatter,
     )
+
+    def _terminate(*_):  # systemd stop sends SIGTERM -> clean shutdown
+        raise KeyboardInterrupt
+
+    signal.signal(signal.SIGTERM, _terminate)
     app.run()
     return 0
+
+
+def _cmd_start(args) -> int:  # noqa: ARG001
+    from .core.service import start
+
+    ok, msg = start()
+    if ok:
+        print(f"flowlinux: started — {msg}. Stop with `flowlinux stop`.")
+    else:
+        print(f"flowlinux: could not start — {msg}", file=sys.stderr)
+    return 0 if ok else 1
+
+
+def _cmd_enable(args) -> int:  # noqa: ARG001
+    from .core.service import enable
+
+    ok, msg = enable()
+    print(f"flowlinux: {msg}" if ok else f"flowlinux: {msg}",
+          file=(None if ok else sys.stderr))
+    return 0 if ok else 1
 
 
 def _cmd_stop(args) -> int:  # noqa: ARG001
@@ -171,7 +199,9 @@ def main(argv: list[str] | None = None) -> int:
     rec.add_argument("--duration", type=float, default=None,
                      help="record this many seconds immediately (no hotkey) and exit")
     rec.add_argument("--no-save", action="store_true", help="don't write WAV files")
-    rec.add_argument("--no-feedback", action="store_true", help="no beeps/notifications")
+    rec.add_argument("--cues", choices=["off", "sound-only", "full"], default="off",
+                     help="feedback cues (default off)")
+    rec.add_argument("--no-feedback", action="store_true", help="alias for --cues off")
     rec.set_defaults(func=_cmd_record)
 
     tr = sub.add_parser("transcribe", help="transcribe an audio file (optionally inject)")
@@ -202,15 +232,20 @@ def main(argv: list[str] | None = None) -> int:
     di.add_argument("--dict", default=None, help="custom dictionary TOML (default: user config)")
     di.add_argument("--no-inject", action="store_true", help="print transcript, don't inject")
     di.add_argument("--once", action="store_true", help="transcribe one utterance then exit")
-    di.add_argument("--no-feedback", action="store_true")
+    di.add_argument("--cues", choices=["off", "sound-only", "full"], default="off",
+                    help="feedback cues (default off)")
+    di.add_argument("--no-feedback", action="store_true", help="alias for --cues off")
     di.add_argument("--save-audio", action="store_true", help="also save WAVs (off by default)")
     di.set_defaults(func=_cmd_dictate)
 
     sub.add_parser("setup", help="first-run TUI wizard (env, config, dictionary)").set_defaults(func=_cmd_setup)
     sub.add_parser("config", help="edit configuration (TUI)").set_defaults(func=_cmd_config)
     sub.add_parser("status", help="show config + daemon status").set_defaults(func=_cmd_status)
-    sub.add_parser("start", help="run the dictation daemon (config-driven)").set_defaults(func=_cmd_start)
-    sub.add_parser("stop", help="stop the systemd --user daemon").set_defaults(func=_cmd_stop)
+    sub.add_parser("start", help="start the dictation daemon in the background (systemd)").set_defaults(func=_cmd_start)
+    sub.add_parser("stop", help="stop the background daemon").set_defaults(func=_cmd_stop)
+    sub.add_parser("enable", help="auto-start the daemon on login (systemd --user)").set_defaults(func=_cmd_enable)
+    # internal: foreground daemon run by the systemd unit's ExecStart
+    sub.add_parser("_run").set_defaults(func=_cmd_run)
 
     doc = sub.add_parser("doctor", help="diagnostics: injection + audio + hotkey + asr")
     doc.set_defaults(func=_cmd_doctor)

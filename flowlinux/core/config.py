@@ -56,8 +56,10 @@ class AudioConfig:
 
 @dataclass
 class FeedbackConfig:
-    sound: bool = True
-    notify: bool = True
+    # off       = silent (default)
+    # sound-only = one quiet beep on start-listening, no notifications
+    # full      = start/stop beeps + desktop notifications
+    cues: str = "off"
 
 
 @dataclass

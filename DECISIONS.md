@@ -218,3 +218,14 @@ Terminal-first product layer (ADR-0007), no GUI:
 - **Validated:** Rich diagnostics render (all green here), config save/load round-trip + tolerant
   parse, start-path config→components wiring, apply_answers mapping. Wizard/config-editor are
   interactive (run `flowlinux setup`). 42 unit tests (+5 config) + 2 gated integration.
+
+## M5 UX refinements — background daemon + quiet cues (2026-06-11)
+- **Background daemon:** `flowlinux start` now installs the systemd --user unit on demand
+  (ExecStart = `{python} -m flowlinux.cli_main _run`, DISPLAY/XAUTHORITY captured) and starts it
+  detached, printing the PID and returning the shell; survives terminal close. `_run` is the
+  internal foreground daemon with SIGTERM→clean-shutdown. Added `flowlinux enable` (auto-start
+  on login). `status` shows PID; `stop` halts it. install.sh no longer hand-writes the unit.
+- **Cues:** replaced per-step beeps+notifications (3 buzzes/dictation) with a single
+  `feedback.cues = off | sound-only | full` toggle, **default off (silent)**. sound-only = one
+  quiet start beep; full = start/stop beeps + notifications. Wired through RecorderApp/
+  DictationApp + `--cues` on record/dictate + the setup/config wizard. 43 tests.

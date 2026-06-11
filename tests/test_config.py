@@ -45,9 +45,13 @@ def test_load_missing_returns_defaults(tmp_path):
 def test_apply_answers():
     c = apply_answers(Config(), {
         "model": "medium.en", "key": "alt_r", "mode": "double_tap",
-        "formatting": False, "cues": False, "cloud": True,
+        "formatting": False, "cues": "full", "cloud": True,
     })
     assert c.asr.model == "medium.en" and c.hotkey.key == "alt_r"
     assert c.hotkey.mode == "double_tap"
-    assert c.formatting.enabled is False and c.feedback.sound is False
+    assert c.formatting.enabled is False and c.feedback.cues == "full"
     assert c.cloud.enabled is True
+
+
+def test_default_cues_is_off():
+    assert Config().feedback.cues == "off"
