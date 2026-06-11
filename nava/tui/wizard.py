@@ -71,7 +71,7 @@ def _seed_dictionary(console) -> None:
     dst = default_dictionary_path()
     if dst.exists():
         return
-    example = Path(__file__).resolve().parents[2] / "config" / "dictionary.example.toml"
+    example = Path(__file__).resolve().parents[1] / "data" / "dictionary.example.toml"
     if example.exists():
         dst.parent.mkdir(parents=True, exist_ok=True)
         dst.write_text(example.read_text(encoding="utf-8"), encoding="utf-8")

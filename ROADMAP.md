@@ -67,5 +67,15 @@ Build vertically — each milestone is end-to-end usable. Status: ✅ done · �
 - [x] `install.sh` bootstrap + `packaging/flowlinux.service.in` systemd unit
 - [x] Validated: diagnostics render, config round-trip, start-path wiring, apply_answers (42 tests)
 - [ ] Nice-to-have later: explicit model-download progress step in wizard; `model` verb
-## M6 — Polish (per-app tone, paste-last-transcript, multilingual stretch) ⬜
-## M7 — Packaging (.deb, AppImage, AUR, systemd user service) ⬜
+## M6 — Polish 🔄 (scoped to paste-last per user)
+- [x] **paste-last-transcript:** `nava paste-last` re-injects the most recent transcript
+      (persisted to ~/.cache/nava; `[history] keep_last` toggle); bind to a DE shortcut
+- [ ] deferred: per-app tone profiles, multilingual, command mode
+
+## M7 — Packaging ✅
+- [x] `.deb` (packaging/deb/build_deb.sh — built + verified; venv-on-install via postinst)
+- [x] AUR `PKGBUILD` (packaging/aur)
+- [x] AppImage recipe + build script (packaging/appimage, experimental, python-appimage)
+- [x] systemd --user unit (static `packaging/systemd/nava.service` + on-demand install)
+- [x] `install.sh` bootstrap + `docs/INSTALL.md` (per-distro install/usage/privacy/uninstall)
+- [x] example dictionary shipped as package data (nava/data)

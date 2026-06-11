@@ -63,6 +63,12 @@ class FeedbackConfig:
 
 
 @dataclass
+class HistoryConfig:
+    # persist the most recent transcript so `nava paste-last` can re-inject it
+    keep_last: bool = True
+
+
+@dataclass
 class CloudConfig:
     enabled: bool = False        # opt-in (ADR-0004)
 
@@ -75,12 +81,13 @@ class Config:
     formatting: FormattingConfig = field(default_factory=FormattingConfig)
     audio: AudioConfig = field(default_factory=AudioConfig)
     feedback: FeedbackConfig = field(default_factory=FeedbackConfig)
+    history: HistoryConfig = field(default_factory=HistoryConfig)
     cloud: CloudConfig = field(default_factory=CloudConfig)
 
     _SECTIONS = {
         "asr": ASRConfig, "hotkey": HotkeyConfig, "injection": InjectionConfig,
         "formatting": FormattingConfig, "audio": AudioConfig,
-        "feedback": FeedbackConfig, "cloud": CloudConfig,
+        "feedback": FeedbackConfig, "history": HistoryConfig, "cloud": CloudConfig,
     }
 
     @classmethod

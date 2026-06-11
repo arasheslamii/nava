@@ -1,0 +1,8 @@
+[Desktop Entry]
+Type=Application
+Name=NAVA
+GenericName=Voice Dictation
+Exec=nava
+Icon=nava
+Categories=Utility;AudioVideo;
+Terminal=true

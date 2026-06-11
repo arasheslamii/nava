@@ -1,0 +1,15 @@
+[Unit]
+Description=NAVA voice dictation daemon
+After=graphical-session.target
+PartOf=graphical-session.target
+
+[Service]
+Type=simple
+ExecStart=/usr/bin/nava _run
+Restart=on-failure
+RestartSec=3
+# X11 is required for injection + hotkey. If DISPLAY isn't inherited, uncomment:
+# Environment=DISPLAY=:0
+
+[Install]
+WantedBy=default.target

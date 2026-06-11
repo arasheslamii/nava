@@ -1,0 +1,38 @@
+# Maintainer: NAVA <nava@localhost>
+pkgname=nava
+pkgver=0.0.1
+pkgrel=1
+pkgdesc="Local-first AI voice dictation for Linux (X11) - hold a key, speak, inject text"
+arch=('any')
+url="https://example.invalid/nava"
+license=('Apache')
+# System tools NAVA shells out to + Python:
+depends=('python' 'python-pip' 'xdotool' 'xclip' 'xorg-xprop' 'libnotify' 'portaudio')
+makedepends=('python-venv')
+source=()  # built from the local tree; for a real AUR pkg, point at a release tarball
+options=('!strip')
+
+package() {
+  # Ship source under /opt/nava/src and create a venv in /opt/nava/venv (deps from PyPI).
+  install -d "${pkgdir}/opt/nava/src"
+  cp -r "${startdir}/../../nava" "${startdir}/../../pyproject.toml" \
+        "${startdir}/../../README.md" "${pkgdir}/opt/nava/src/"
+
+  install -Dm644 "${startdir}/../systemd/nava.service" \
+    "${pkgdir}/usr/lib/systemd/user/nava.service"
+
+  # Launcher that builds the venv on first run (avoids network during makepkg).
+  install -d "${pkgdir}/usr/bin"
+  cat > "${pkgdir}/usr/bin/nava" <<'LAUNCH'
+#!/bin/sh
+VENV=/opt/nava/venv
+if [ ! -x "$VENV/bin/nava" ]; then
+  echo "First run: setting up NAVA environment (downloads deps from PyPI)…" >&2
+  python -m venv "$VENV" && "$VENV/bin/pip" install -q --upgrade pip \
+    && "$VENV/bin/pip" install -q "/opt/nava/src[hotkey,audio,asr,tui]"
+fi
+exec "$VENV/bin/nava" "$@"
+LAUNCH
+  chmod 0755 "${pkgdir}/usr/bin/nava"
+  ln -s nava "${pkgdir}/usr/bin/nava-inject"
+}

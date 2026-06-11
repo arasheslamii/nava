@@ -237,3 +237,18 @@ Renamed the application from the working name "FlowLinux" to **NAVA**. Package `
 strings updated. Historical log entries above (ADR-0001…0010, milestone results) keep their
 original "flowlinux" wording as the dated record; CLAUDE.md/README rebranded. User config
 auto-migrated from `~/.config/flowlinux`. 43 tests pass under the new name.
+
+## M6 (paste-last) + M7 (packaging) (2026-06-11)
+- **paste-last-transcript:** daemon persists the latest formatted transcript to
+  `~/.cache/nava/last_transcript.txt` (only the last one; `[history] keep_last`, default on).
+  `nava paste-last [--wait]` re-injects it from a separate process — bind to a DE shortcut for
+  a hotkey. Verified live (Unicode re-injected exact). Rest of M6 deferred per user (skip cloud).
+- **Packaging (M7):**
+  - `.deb` (`packaging/deb/build_deb.sh`): thin package, Depends on python3/venv/pip + xdotool/
+    xclip/x11-utils/libnotify-bin/libportaudio2; postinst builds `/opt/nava/venv` and pip-installs
+    `nava[hotkey,audio,asr,tui]` (needs network once). Built + `dpkg-deb --info/--contents` verified.
+    Staged in /tmp because the dev mount forces 0777 (dpkg-deb needs ≤0775).
+  - AUR `PKGBUILD` (venv on first run), AppImage recipe + `build_appimage.sh` (python-appimage,
+    experimental — host still needs xdotool/xclip), static `systemd/nava.service`.
+  - Example dictionary moved into the package (`nava/data/`, package-data) so it ships in wheels/
+    debs, not just the repo; wizard seeds from there. `docs/INSTALL.md` covers all paths.

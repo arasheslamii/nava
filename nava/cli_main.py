@@ -142,7 +142,7 @@ def _cmd_run(args) -> int:  # noqa: ARG001
     app = DictationApp(
         backend=backend, mode=PTTMode(c.hotkey.mode), key=c.hotkey.key,
         device=(c.audio.device or None), method=c.injection.method,
-        cues=c.feedback.cues, formatter=formatter,
+        cues=c.feedback.cues, formatter=formatter, keep_last=c.history.keep_last,
     )
 
     def _terminate(*_):  # systemd stop sends SIGTERM -> clean shutdown
@@ -179,6 +179,25 @@ def _cmd_stop(args) -> int:  # noqa: ARG001
     ok, msg = stop()
     print(f"nava: {msg}")
     return 0 if ok else 1
+
+
+def _cmd_paste_last(args) -> int:
+    """Re-inject the most recent transcript (critical fallback). Bind to a DE shortcut."""
+    import time
+
+    from .core.history import load_last
+    from .injection.manager import InjectionManager
+
+    text = load_last()
+    if not text:
+        print("nava: no recent transcript to paste", file=sys.stderr)
+        return 1
+    if args.wait > 0:
+        time.sleep(args.wait)
+    res = InjectionManager().inject(text, method=args.method)
+    print(f"nava: {'pasted last transcript' if res.ok else 'FAILED'} via {res.backend}",
+          file=sys.stderr)
+    return 0 if res.ok else 1
 
 
 def _cmd_version(args) -> int:  # noqa: ARG001
@@ -246,6 +265,12 @@ def main(argv: list[str] | None = None) -> int:
     sub.add_parser("enable", help="auto-start the daemon on login (systemd --user)").set_defaults(func=_cmd_enable)
     # internal: foreground daemon run by the systemd unit's ExecStart
     sub.add_parser("_run").set_defaults(func=_cmd_run)
+
+    pl = sub.add_parser("paste-last", help="re-inject the most recent transcript")
+    pl.add_argument("--wait", type=float, default=0.0, metavar="SEC",
+                    help="wait before injecting (focus a window)")
+    pl.add_argument("--method", default="auto", choices=["auto", "type", "paste"])
+    pl.set_defaults(func=_cmd_paste_last)
 
     doc = sub.add_parser("doctor", help="diagnostics: injection + audio + hotkey + asr")
     doc.set_defaults(func=_cmd_doctor)

@@ -28,6 +28,7 @@ class DictationApp:
         save_audio: bool = False,
         once: bool = False,
         formatter: Formatter | None = None,
+        keep_last: bool = True,
     ):
         self.backend = backend
         self.injector = InjectionManager()
@@ -35,6 +36,7 @@ class DictationApp:
         self.method = method
         self.formatter = formatter
         self.cues = cues
+        self.keep_last = keep_last
         self.recorder_app = RecorderApp(
             mode=mode, key=key, device=device, cues=cues,
             save=save_audio, once=once, on_utterance=self._on_utterance,
@@ -59,6 +61,9 @@ class DictationApp:
             if self.cues == "full":
                 feedback.notify("NAVA", "(no speech detected)")
             return
+        if self.keep_last:
+            from .history import save_last
+            save_last(text)  # enables `nava paste-last`
         if not self.inject:
             return
         res = self.injector.inject(text, method=self.method)
