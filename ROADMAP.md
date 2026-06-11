@@ -27,7 +27,7 @@ Build vertically — each milestone is end-to-end usable. Status: ✅ done · �
 - [x] **Acceptance:** live PTT via simulated Right-Ctrl → 1.3 s hold captured to valid
       16 kHz WAV; fixed-duration mic capture verified; 20 tests pass
 
-## M3 — Local ASR + benchmark 🔄
+## M3 — Local ASR + benchmark ✅
 **Step 1 — CPU baseline ✅ (proven end-to-end)**
 - [x] `ASRBackend` interface + `FasterWhisperBackend` (CT2; CPU int8, small.en)
 - [x] Silero VAD gating (bundled) + anti-hallucination params (beam 5,
@@ -42,10 +42,11 @@ Build vertically — each milestone is end-to-end usable. Status: ✅ done · �
       **CPU int8 RTF 0.45** → **default = CPU small.en int8**. whisper.cpp-CUDA not pursued
       (CUDA-11 toolkit = sudo + driver-470 incompat; CPU already wins). Abstraction kept for
       modern-GPU machines.
-**Step 3 — WER benchmark harness ✅ built / 🔄 full run pending data**
+**Step 3 — WER benchmark + model lock ✅**
 - [x] `bench/run_bench.py`: WER (jiwer, normalized) + latency p50/p95 + per-category; validated
-- [ ] Full run on personal set (recording) + LibriSpeech test-clean; tune CPU model
-      (small.en vs base.en vs distil) + optional denoise WER on/off
+- [x] small.en vs medium.en on personal set + LibriSpeech; **locked small.en default +
+      medium.en opt-in** (ADR-0010). small.en: libri 3.2%, noisy 6%, p50 2.7s. Jargon
+      proper-nouns deferred to M4 custom dictionary.
 
 ## M4 — Formatting ⬜
 - Tier-1 rules (fillers/punct/casing/dictionary) default; optional cloud LLM; A/B raw vs
