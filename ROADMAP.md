@@ -59,10 +59,13 @@ Build vertically — each milestone is end-to-end usable. Status: ✅ done · �
 - [ ] self-correction resolution, paragraphing, per-app tone; Claude Haiku 4.5 / Groq; user key
 **Step 3 — A/B raw vs formatted in transcript history ⬜ (with M5/M6)**
 
-## M5 — TUI installer + config + diagnostics ⬜ (no GUI)
-- `install.sh` bootstrap (venv + package + systemd user service + autostart); Rich/questionary
-  first-run wizard (env detect, dep install, GPU probe, model download w/ progress bar,
-  diagnostics self-test + test-injection prompt); `flowlinux config` TOML editor; `flowlinux
-  status`. CLI verbs: start|stop|status|config|doctor|model.
+## M5 — TUI installer + config + diagnostics ✅ (no GUI)
+- [x] TOML config (`~/.config/flowlinux/config.toml`), tolerant load + tomli-w save
+- [x] Rich diagnostics table (`flowlinux doctor`); ASCII banner
+- [x] questionary first-run wizard (`flowlinux setup`) + config editor (`flowlinux config`)
+- [x] Daemon control: `flowlinux start` (config-driven), `status`, `stop`; systemd --user helper
+- [x] `install.sh` bootstrap + `packaging/flowlinux.service.in` systemd unit
+- [x] Validated: diagnostics render, config round-trip, start-path wiring, apply_answers (42 tests)
+- [ ] Nice-to-have later: explicit model-download progress step in wizard; `model` verb
 ## M6 — Polish (per-app tone, paste-last-transcript, multilingual stretch) ⬜
 ## M7 — Packaging (.deb, AppImage, AUR, systemd user service) ⬜

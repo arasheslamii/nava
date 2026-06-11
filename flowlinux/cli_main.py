@@ -90,33 +90,67 @@ def _cmd_dictate(args) -> int:
 
 
 def _cmd_doctor(args) -> int:  # noqa: ARG001
-    from .cli import _cmd_doctor as injection_doctor
+    from .tui.diagnostics import render_diagnostics
 
-    rc = injection_doctor()
-    print("\nFlowLinux audio/hotkey diagnostics")
-    # audio
-    try:
-        import sounddevice as sd
-        from .audio.capture import resolve_input_device
+    return 0 if render_diagnostics() else 1
 
-        dev = resolve_input_device(None)
-        info = sd.query_devices(dev, "input") if dev is not None else sd.query_devices(kind="input")
-        print(f"  [ok ] input device  - {info['name']} ({int(info['default_samplerate'])} Hz)")
-    except Exception as e:
-        print(f"  [bad] input device  - {e}")
-        rc = 1
-    # hotkey
-    if not os.environ.get("DISPLAY"):
-        print("  [bad] hotkey        - no DISPLAY (X11 required for pynput listener)")
-        rc = 1
-    else:
-        try:
-            import pynput  # noqa: F401
-            print("  [ok ] hotkey        - pynput available, X11 present")
-        except Exception as e:
-            print(f"  [bad] hotkey        - pynput import failed: {e}")
-            rc = 1
-    return rc
+
+def _cmd_setup(args) -> int:  # noqa: ARG001
+    from .tui.wizard import run_setup
+
+    return run_setup()
+
+
+def _cmd_config(args) -> int:  # noqa: ARG001
+    from .tui.wizard import run_config_editor
+
+    return run_config_editor()
+
+
+def _cmd_status(args) -> int:  # noqa: ARG001
+    from .core.config import Config, default_config_path
+    from .core.service import status_text
+
+    cfg_path = default_config_path()
+    print(f"FlowLinux status")
+    print(f"  config  : {'present' if cfg_path.exists() else 'missing (run flowlinux setup)'} "
+          f"({cfg_path})")
+    if cfg_path.exists():
+        c = Config.load()
+        print(f"  model   : {c.asr.model} ({c.asr.device}/{c.asr.compute_type})")
+        print(f"  hotkey  : {c.hotkey.key} [{c.hotkey.mode}]   formatting: "
+              f"{'on' if c.formatting.enabled else 'off'}   cloud: "
+              f"{'on' if c.cloud.enabled else 'off'}")
+    print(f"  daemon  : {status_text()}")
+    return 0
+
+
+def _cmd_start(args) -> int:  # noqa: ARG001
+    from .asr.factory import build_backend
+    from .core.config import Config
+    from .core.dictation import DictationApp
+    from .format.pipeline import build_pipeline
+    from .hotkey.base import PTTMode
+
+    c = Config.load()
+    backend = build_backend(model=c.asr.model, device=c.asr.device,
+                            compute_type=c.asr.compute_type, vad=c.asr.vad)
+    formatter = build_pipeline(dict_path=c.formatting.dictionary, enabled=c.formatting.enabled)
+    app = DictationApp(
+        backend=backend, mode=PTTMode(c.hotkey.mode), key=c.hotkey.key,
+        device=(c.audio.device or None), method=c.injection.method,
+        feedback_enabled=(c.feedback.sound or c.feedback.notify), formatter=formatter,
+    )
+    app.run()
+    return 0
+
+
+def _cmd_stop(args) -> int:  # noqa: ARG001
+    from .core.service import stop
+
+    ok, msg = stop()
+    print(f"flowlinux: {msg}")
+    return 0 if ok else 1
 
 
 def _cmd_version(args) -> int:  # noqa: ARG001
@@ -172,7 +206,13 @@ def main(argv: list[str] | None = None) -> int:
     di.add_argument("--save-audio", action="store_true", help="also save WAVs (off by default)")
     di.set_defaults(func=_cmd_dictate)
 
-    doc = sub.add_parser("doctor", help="diagnostics: injection + audio + hotkey")
+    sub.add_parser("setup", help="first-run TUI wizard (env, config, dictionary)").set_defaults(func=_cmd_setup)
+    sub.add_parser("config", help="edit configuration (TUI)").set_defaults(func=_cmd_config)
+    sub.add_parser("status", help="show config + daemon status").set_defaults(func=_cmd_status)
+    sub.add_parser("start", help="run the dictation daemon (config-driven)").set_defaults(func=_cmd_start)
+    sub.add_parser("stop", help="stop the systemd --user daemon").set_defaults(func=_cmd_stop)
+
+    doc = sub.add_parser("doctor", help="diagnostics: injection + audio + hotkey + asr")
     doc.set_defaults(func=_cmd_doctor)
 
     ver = sub.add_parser("version", help="print version")

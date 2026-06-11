@@ -200,3 +200,21 @@ Offline, ~0 ms, default-on `FormatterPipeline` = dictionary correction → rule 
   `config/dictionary.example.toml` seeded with the user's terms. Bench gained `--format/--dict`.
 - **Bug fixed:** bench `by_cat` used raw hyp (hid per-category gains); now uses formatted hyp.
 - Tier-2 cloud LLM (opt-in, ADR-0004) and Tier-3 local LLM (OFF here) remain for later. 37 tests.
+
+## M5 — TUI installer + config + diagnostics (2026-06-11)
+Terminal-first product layer (ADR-0007), no GUI:
+- **Config:** TOML at `~/.config/flowlinux/config.toml` (`core/config.py`), nested dataclasses,
+  tolerant loader (unknown keys/sections ignored, missing → defaults), tomli-w writer.
+- **TUI (Rich + questionary):** ASCII banner; `flowlinux doctor` renders a Rich diagnostics
+  table (session/xdotool/xclip/xprop/notify/mic/hotkey/asr) with pass/fail + readiness verdict;
+  `flowlinux setup` first-run wizard (env detect → model/hotkey/mode/formatting/cues/cloud prompts
+  → save config + seed dictionary → next steps); `flowlinux config` editor (same prompts, current
+  values as defaults).
+- **Daemon control:** `flowlinux start` = config-driven dictation daemon (foreground, what systemd
+  runs); `flowlinux status` (config + service state); `flowlinux stop` (systemctl --user).
+  `core/service.py` systemd --user helpers.
+- **Packaging:** `install.sh` bootstrap (apt system deps → venv → `pip install -e .[...]` →
+  systemd --user unit from `packaging/flowlinux.service.in` → launch wizard).
+- **Validated:** Rich diagnostics render (all green here), config save/load round-trip + tolerant
+  parse, start-path config→components wiring, apply_answers mapping. Wizard/config-editor are
+  interactive (run `flowlinux setup`). 42 unit tests (+5 config) + 2 gated integration.

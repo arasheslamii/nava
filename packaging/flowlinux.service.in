@@ -1,0 +1,15 @@
+[Unit]
+Description=FlowLinux voice dictation daemon
+After=graphical-session.target
+PartOf=graphical-session.target
+
+[Service]
+Type=simple
+ExecStart=@FLOWLINUX@ start
+Restart=on-failure
+RestartSec=3
+# X11 is required for injection + hotkey; templated by install.sh from the install session.
+Environment=DISPLAY=@DISPLAY@
+
+[Install]
+WantedBy=default.target

@@ -23,7 +23,7 @@ audio  = ["sounddevice>=0.4", "numpy>=1.24"]   # M2/M3: 16kHz capture
 # separate env in M3 step 2 — see DECISIONS ADR-0005.
 asr    = ["faster-whisper>=1.0", "soundfile>=0.12"]  # bundled Silero VAD; soundfile decodes audio
 bench  = ["jiwer>=3"]                            # WER for the M3 benchmark harness
-tui    = ["rich>=13", "questionary>=2"]         # M5: terminal installer/config/diagnostics (no GUI)
+tui    = ["rich>=13", "questionary>=2", "tomli-w>=1.0"]  # M5: terminal installer/config/diagnostics
 dev    = ["pytest>=7"]
 
 [project.scripts]

@@ -43,7 +43,14 @@ python3 -m venv .venv && . .venv/bin/activate
 pip install -e .[dev]
 sudo apt-get install -y xdotool xclip libnotify-bin      # system deps (X11)
 
-pip install -e ".[hotkey,audio,asr,bench,dev]"   # M2/M3 deps (pynput, sounddevice, faster-whisper, jiwer)
+pip install -e ".[hotkey,audio,asr,tui,bench,dev]"   # all milestone deps
+# or one-shot bootstrap (apt deps + venv + systemd unit + wizard):
+./install.sh
+
+flowlinux setup                                   # M5: first-run TUI wizard (config + dictionary)
+flowlinux config                                  # M5: edit config (TUI)
+flowlinux start                                   # M5: run the config-driven dictation daemon
+flowlinux status                                  # M5: config + daemon state
 
 echo "hello world" | flowlinux-inject            # M1: type via XTEST
 echo "hello world" | flowlinux-inject --paste     # M1: clipboard paste
