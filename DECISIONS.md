@@ -159,3 +159,28 @@ LibriSpeech test-clean (100-utterance subset), CPU `small.en` int8:
 - Personal 20-utterance set (plain/jargon/noisy incl. "MAAD Capital", ML terms) to be recorded
   by user; then small.en vs medium.en (accuracy + RTF) decides the locked CPU model. Harness:
   `python bench/run_bench.py --dataset {personal:<dir>|librispeech:<dir>} --configs <specs>`.
+
+## M3 step 3 — full WER benchmark + model lock (2026-06-11)
+small.en vs medium.en (CPU int8), personal 20-utterance set + LibriSpeech test-clean:
+
+| metric                | small.en | medium.en |
+|-----------------------|----------|-----------|
+| LibriSpeech WER       | 3.20%    | 1.43%     |
+| personal overall      | 16.67%   | 12.50%    |
+| personal plain        | 13.04%   |  9.57%    |
+| personal noisy        |  6.06%   |  6.06%    |
+| personal jargon       | 30.12%   | 21.69%    |
+| latency p50 / p95     | 2.70 / 3.55 s | 9.17 / 11.55 s |
+| mean RTF              | 0.30     | 1.00 (1.84 on libri) |
+
+Notes: personal WER is inflated by reference typos (wht, Suunday — scored vs correct ASR),
+spoken-number/date formatting (forty-two thousand↔$42,000, seven↔7) and filler removal
+(Whisper drops "um/like/you know" — desired, M4's job), and British↔US spelling. The genuine
+gap is **proper-noun jargon** (MAAD Capital, saxa, QLoRA, LLaMA-3-8B) — **no base model gets
+these; the M4 custom dictionary will**. medium ~halves clean-speech WER but costs ~3.4× latency.
+
+## ADR-0010 — Lock CPU model: small.en default, medium.en opt-in (2026-06-11)
+Default = **faster-whisper small.en int8** (responsive ~3 s/utterance, strong on plain/noisy).
+**medium.en** available via `--model medium.en` for accuracy-priority use (accepts ~9 s/utt).
+Already the factory default; no code change. Proper-noun jargon handled by the M4 custom
+dictionary (model-independent). Re-benchmark small.en after M4 to confirm the gap closes.
