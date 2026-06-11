@@ -9,12 +9,17 @@ other product.
 
 ## Quickstart (Debian / Ubuntu / Mint)
 
-```bash
+Download the latest `.deb` from [Releases](https://github.com/arasheslamii/nava/releases), then:
+
+​```
+wget https://github.com/arasheslamii/nava/releases/download/v0.0.1/nava_0.0.1_all.deb
 sudo apt install ./nava_0.0.1_all.deb     # installs system deps + a venv in /opt/nava
 nava setup                                 # pick model / hotkey / cues; seeds your dictionary
 nava start                                 # background daemon: hold Right-Ctrl, speak, release
 nava enable                                # optional: auto-start on login
-```
+​```
+
+> **X11 only.** Wayland isn't supported yet — switch to an X11 session to use NAVA for now.
 
 Other distros / from source / AppImage: see **[docs/INSTALL.md](docs/INSTALL.md)**.
 
@@ -29,7 +34,6 @@ Other distros / from source / AppImage: see **[docs/INSTALL.md](docs/INSTALL.md)
 | `nava setup` / `config` | TUI wizard / config editor |
 | `nava doctor` | diagnostics (X11, xdotool, clipboard, mic, hotkey, ASR) |
 | `echo hi \| nava-inject` | low-level text injection |
-
 ## How it works
 
 - **Injection (X11):** XTEST typing → clipboard-paste → notify, with automatic per-app paste
