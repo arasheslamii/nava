@@ -184,3 +184,19 @@ Default = **faster-whisper small.en int8** (responsive ~3 s/utterance, strong on
 **medium.en** available via `--model medium.en` for accuracy-priority use (accepts ~9 s/utt).
 Already the factory default; no code change. Proper-noun jargon handled by the M4 custom
 dictionary (model-independent). Re-benchmark small.en after M4 to confirm the gap closes.
+
+## M4 step 1 — Tier-1 formatter: rules + custom dictionary (2026-06-11)
+Offline, ~0 ms, default-on `FormatterPipeline` = dictionary correction → rule cleanup.
+- **Custom dictionary** (`dictionary.toml`, case-insensitive, word-boundary, longest-first):
+  the model-independent fix for invented proper nouns. On the personal set (small.en),
+  **jargon WER 30.12% → 16.87%, overall 16.67% → 12.50%** — MAAD Capital, QLoRA, saxa,
+  faster-whisper, venv, MALLOC, LLaMA-3-8B all corrected. Remaining jargon errors are
+  non-dictionary (H200→HDMI left out as ambiguous, repo→ripple, a real ASR slip).
+- **Rules:** conservative filler removal (um/uh/er/hmm + "you know"/"i mean"; ambiguous
+  "like/actually" kept), whitespace/punctuation cleanup, sentence capitalization that does
+  NOT false-split decimals (3.30), terminal-punctuation. 10 golden/unit tests.
+- **Integration:** `flowlinux dictate`/`transcribe` apply Tier-1 by default (`--raw` to skip,
+  `--dict <toml>` to point at a custom file; default `~/.config/flowlinux/dictionary.toml`).
+  `config/dictionary.example.toml` seeded with the user's terms. Bench gained `--format/--dict`.
+- **Bug fixed:** bench `by_cat` used raw hyp (hid per-category gains); now uses formatted hyp.
+- Tier-2 cloud LLM (opt-in, ADR-0004) and Tier-3 local LLM (OFF here) remain for later. 37 tests.

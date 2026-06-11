@@ -9,6 +9,7 @@ from typing import Optional
 from ..asr.base import ASRBackend
 from ..audio import feedback
 from ..audio.capture import Recording
+from ..format.base import Formatter
 from ..hotkey.base import PTTMode
 from ..injection.manager import InjectionManager
 from .recorder_app import RecorderApp
@@ -26,11 +27,13 @@ class DictationApp:
         feedback_enabled: bool = True,
         save_audio: bool = False,
         once: bool = False,
+        formatter: Formatter | None = None,
     ):
         self.backend = backend
         self.injector = InjectionManager()
         self.inject = inject
         self.method = method
+        self.formatter = formatter
         self.feedback_enabled = feedback_enabled
         self.recorder_app = RecorderApp(
             mode=mode, key=key, device=device, feedback_enabled=feedback_enabled,
@@ -47,6 +50,11 @@ class DictationApp:
         text = result.text
         print(f"[asr] {result.duration_s:.1f}s audio, {result.infer_s:.2f}s infer "
               f"(rtf {result.rtf:.2f}), dropped {result.dropped} → {text!r}")
+        if text and self.formatter is not None:
+            fr = self.formatter.format(text)
+            if fr.changed:
+                print(f"[fmt] {', '.join(fr.notes) or 'cleaned'} → {fr.text!r}")
+            text = fr.text
         if not text:
             if self.feedback_enabled:
                 feedback.notify("FlowLinux", "(no speech detected)")

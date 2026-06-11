@@ -76,7 +76,7 @@ def parse_config(spec: str):
     return device, model, compute
 
 
-def run_config(spec: str, items):
+def run_config(spec: str, items, formatter=None):
     device, model, compute = parse_config(spec)
     backend = build_backend(engine="faster-whisper", model=model, device=device,
                             compute_type=compute)
@@ -90,13 +90,14 @@ def run_config(spec: str, items):
     for audio_path, cat, ref in items:
         audio = load_audio_file(str(audio_path))
         res = backend.transcribe(audio, 16_000)
+        hyp_text = formatter.format(res.text).text if formatter else res.text
         refs.append(normalize(ref))
-        hyps.append(normalize(res.text))
+        hyps.append(normalize(hyp_text))
         infers.append(res.infer_s)
         rtfs.append(res.rtf)
-        by_cat.setdefault(cat, []).append((normalize(ref), normalize(res.text)))
-        print(f"  [{cat:6}] {res.infer_s:5.2f}s rtf {res.rtf:4.2f}  ref={ref[:48]!r} "
-              f"hyp={res.text[:48]!r}", flush=True)
+        by_cat.setdefault(cat, []).append((normalize(ref), normalize(hyp_text)))
+        print(f"  [{cat:6}] {res.infer_s:5.2f}s rtf {res.rtf:4.2f}  ref={ref[:46]!r} "
+              f"hyp={hyp_text[:46]!r}", flush=True)
 
     overall_wer = jiwer.wer(refs, hyps) if refs else 0.0
     print(f"  ---- {spec} ----")
@@ -116,7 +117,14 @@ def main() -> int:
     ap.add_argument("--configs", default="cpu:small.en:int8",
                     help="comma-separated device:model:compute specs")
     ap.add_argument("--limit", type=int, default=None, help="cap number of utterances")
+    ap.add_argument("--format", action="store_true", help="apply Tier-1 formatting to hyps")
+    ap.add_argument("--dict", default=None, help="custom dictionary TOML for --format")
     args = ap.parse_args()
+
+    formatter = None
+    if args.format:
+        from flowlinux.format.pipeline import build_pipeline
+        formatter = build_pipeline(dict_path=args.dict)
 
     kind, _, root = args.dataset.partition(":")
     if kind == "personal":
@@ -133,7 +141,7 @@ def main() -> int:
         return 2
     print(f"dataset {args.dataset}: {len(items)} utterances")
 
-    summary = [run_config(spec.strip(), items) for spec in args.configs.split(",")]
+    summary = [run_config(spec.strip(), items, formatter) for spec in args.configs.split(",")]
 
     print("\n================ SUMMARY ================")
     print(f"{'config':32} {'WER%':>7} {'p50':>7} {'p95':>7} {'RTF':>6}")

@@ -51,12 +51,19 @@ def _cmd_transcribe(args) -> int:
                             compute_type=args.compute_type, vad=not args.no_vad)
     audio = load_audio_file(args.path)
     result = backend.transcribe(audio, 16_000)
-    print(result.text)
+    text = result.text
+    if text and not args.raw:
+        from .format.pipeline import build_pipeline
+        fr = build_pipeline(dict_path=args.dict).format(text)
+        if fr.changed:
+            print(f"[fmt] {', '.join(fr.notes) or 'cleaned'}", file=sys.stderr)
+        text = fr.text
+    print(text)
     print(f"[asr] {backend.name} | {result.duration_s:.1f}s audio | {result.infer_s:.2f}s "
           f"infer (rtf {result.rtf:.2f}) | dropped {result.dropped}", file=sys.stderr)
-    if args.inject and result.text:
+    if args.inject and text:
         from .injection.manager import InjectionManager
-        res = InjectionManager().inject(result.text, method=args.method)
+        res = InjectionManager().inject(text, method=args.method)
         print(f"[inject] {'ok' if res.ok else 'FAILED'} via {res.backend}: {res.detail}",
               file=sys.stderr)
         return 0 if res.ok else 1
@@ -70,10 +77,13 @@ def _cmd_dictate(args) -> int:
 
     backend = build_backend(engine=args.engine, model=args.model, device=args.device,
                             compute_type=args.compute_type, vad=not args.no_vad)
+    from .format.pipeline import build_pipeline
+    formatter = build_pipeline(dict_path=args.dict, enabled=not args.raw)
     app = DictationApp(
         backend=backend, mode=PTTMode(args.mode), key=args.key, device=args.audio_device,
         inject=not args.no_inject, method=args.method,
         feedback_enabled=not args.no_feedback, save_audio=args.save_audio, once=args.once,
+        formatter=formatter,
     )
     app.run()
     return 0
@@ -137,6 +147,8 @@ def main(argv: list[str] | None = None) -> int:
     tr.add_argument("--device", default="cpu", choices=["cpu", "cuda", "auto"])
     tr.add_argument("--compute-type", default="int8")
     tr.add_argument("--no-vad", action="store_true", help="disable Silero VAD gating")
+    tr.add_argument("--raw", action="store_true", help="skip Tier-1 formatting")
+    tr.add_argument("--dict", default=None, help="custom dictionary TOML (default: user config)")
     tr.add_argument("--inject", action="store_true", help="inject the transcript into focus")
     tr.add_argument("--method", default="auto", choices=["auto", "type", "paste"])
     tr.set_defaults(func=_cmd_transcribe)
@@ -152,6 +164,8 @@ def main(argv: list[str] | None = None) -> int:
     di.add_argument("--key", default="ctrl_r")
     di.add_argument("--audio-device", default=None, help="mic device (default pulse/pipewire)")
     di.add_argument("--method", default="auto", choices=["auto", "type", "paste"])
+    di.add_argument("--raw", action="store_true", help="skip Tier-1 formatting")
+    di.add_argument("--dict", default=None, help="custom dictionary TOML (default: user config)")
     di.add_argument("--no-inject", action="store_true", help="print transcript, don't inject")
     di.add_argument("--once", action="store_true", help="transcribe one utterance then exit")
     di.add_argument("--no-feedback", action="store_true")

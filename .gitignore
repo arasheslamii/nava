@@ -13,8 +13,10 @@ dist/
 models/
 *.bin
 *.gguf
-# recorded audio / transcripts (privacy: never commit user data)
+# recorded audio / transcripts + datasets (privacy: never commit user data / large corpora)
 *.wav
+*.flac
+data/
 .history/
 # scratch
 /tmp_*

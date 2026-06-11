@@ -48,9 +48,16 @@ Build vertically — each milestone is end-to-end usable. Status: ✅ done · �
       medium.en opt-in** (ADR-0010). small.en: libri 3.2%, noisy 6%, p50 2.7s. Jargon
       proper-nouns deferred to M4 custom dictionary.
 
-## M4 — Formatting ⬜
-- Tier-1 rules (fillers/punct/casing/dictionary) default; optional cloud LLM; A/B raw vs
-  formatted in history; golden-pair tests incl. "silence in → empty out".
+## M4 — Formatting 🔄
+**Step 1 — Tier-1 rules + custom dictionary ✅**
+- [x] `FormatterPipeline` = dictionary (proper-noun correction) → rule cleanup (fillers,
+      spacing, capitalization, terminal punct); default-on, offline, ~0 ms
+- [x] Custom dictionary (TOML, case-insensitive, word-boundary); `config/dictionary.example.toml`
+- [x] Wired into `dictate`/`transcribe` (`--raw`, `--dict`); bench `--format/--dict`
+- [x] **Result:** personal jargon WER 30.12% → 16.87%, overall 16.67% → 12.50%; 10 tests
+**Step 2 — Tier-2 cloud LLM formatter ⬜ (opt-in, off by default — ADR-0004)**
+- [ ] self-correction resolution, paragraphing, per-app tone; Claude Haiku 4.5 / Groq; user key
+**Step 3 — A/B raw vs formatted in transcript history ⬜ (with M5/M6)**
 
 ## M5 — TUI installer + config + diagnostics ⬜ (no GUI)
 - `install.sh` bootstrap (venv + package + systemd user service + autostart); Rich/questionary

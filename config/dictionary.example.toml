@@ -1,0 +1,26 @@
+# FlowLinux custom dictionary — corrects ASR mishears of your jargon / proper nouns.
+# Copy to ~/.config/flowlinux/dictionary.toml and edit.
+#
+# Keys = lowercase mishears (what Whisper actually outputs); values = exact replacement
+# (case preserved). Matching is case-insensitive + word-boundary aware, longest first.
+# Prefer distinctive multi-word phrases. Single common words (e.g. "valve") can
+# over-correct real usage — review the ones marked below.
+
+[corrections]
+# proper nouns / products
+"mod capital" = "MAAD Capital"
+"mad capital" = "MAAD Capital"
+"maloc" = "MALLOC"
+"faster we swear" = "faster-whisper"
+
+# ML / infra terms
+"cute laura" = "QLoRA"
+"q laura" = "QLoRA"
+"qlura" = "QLoRA"
+"lama38b" = "LLaMA-3-8B"
+"loma38b" = "LLaMA-3-8B"
+"llama 3 8b" = "LLaMA-3-8B"
+
+# review — single-word corrections can over-trigger on normal usage:
+"sexa" = "saxa"
+"valve" = "venv"
