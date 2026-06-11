@@ -1,10 +1,10 @@
 #!/usr/bin/env bash
-# FlowLinux bootstrap installer (X11). Sets up venv + deps + systemd --user service,
+# NAVA bootstrap installer (X11). Sets up venv + deps + systemd --user service,
 # then launches the TUI first-run wizard.
 set -euo pipefail
 cd "$(dirname "$0")"
 
-echo "==> FlowLinux installer"
+echo "==> NAVA installer"
 
 # 1) system dependencies (X11 injection + audio)
 SYS_DEPS=(xdotool xclip x11-utils libnotify-bin libportaudio2)
@@ -24,13 +24,13 @@ if [ ! -d .venv ]; then
 fi
 # shellcheck disable=SC1091
 . .venv/bin/activate
-echo "==> Installing FlowLinux (hotkey, audio, asr, tui)"
+echo "==> Installing NAVA (hotkey, audio, asr, tui)"
 pip install -q -U pip
 pip install -q -e ".[hotkey,audio,asr,tui]"
 
-BIN="$(pwd)/.venv/bin/flowlinux"
+BIN="$(pwd)/.venv/bin/nava"
 
-# 3) first-run wizard (the systemd --user unit is installed on first `flowlinux start`)
+# 3) first-run wizard (the systemd --user unit is installed on first `nava start`)
 echo "==> Launching setup wizard"
 "$BIN" setup || true
 

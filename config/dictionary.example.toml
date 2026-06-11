@@ -1,5 +1,5 @@
-# FlowLinux custom dictionary — corrects ASR mishears of your jargon / proper nouns.
-# Copy to ~/.config/flowlinux/dictionary.toml and edit.
+# NAVA custom dictionary — corrects ASR mishears of your jargon / proper nouns.
+# Copy to ~/.config/nava/dictionary.toml and edit.
 #
 # Keys = lowercase mishears (what Whisper actually outputs); values = exact replacement
 # (case preserved). Matching is case-insensitive + word-boundary aware, longest first.

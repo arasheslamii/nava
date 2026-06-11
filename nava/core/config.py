@@ -1,6 +1,6 @@
-"""FlowLinux configuration — TOML at ~/.config/flowlinux/config.toml.
+"""NAVA configuration — TOML at ~/.config/nava/config.toml.
 
-Hand-editable; the `flowlinux config` TUI edits the same file. Nested dataclasses map to
+Hand-editable; the `nava config` TUI edits the same file. Nested dataclasses map to
 TOML tables. Loading is tolerant: unknown keys are ignored, missing keys take defaults.
 """
 
@@ -13,7 +13,7 @@ from pathlib import Path
 
 def config_dir() -> Path:
     base = os.environ.get("XDG_CONFIG_HOME") or os.path.expanduser("~/.config")
-    return Path(base) / "flowlinux"
+    return Path(base) / "nava"
 
 
 def default_config_path() -> Path:

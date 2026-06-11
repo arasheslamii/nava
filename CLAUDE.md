@@ -1,4 +1,4 @@
-# CLAUDE.md — FlowLinux conventions & build/run
+# CLAUDE.md — NAVA conventions & build/run
 
 System-wide, local-first AI voice dictation for Linux. Clean-room implementation — no
 code, assets, or branding copied from any other product.
@@ -11,8 +11,8 @@ Full environment + rationale in [PLAN.md](PLAN.md).
 ## Architecture (locked — see DECISIONS.md)
 - **All-Python core + terminal UI (Rich + questionary). No GUI.** Headless `systemd --user`
   daemon at runtime; styled TUI for install/config/diagnostics. No Rust helper (X11 makes
-  injection trivial). CLI verbs: `flowlinux start|stop|status|config|doctor|model`.
-  Config: TOML at `~/.config/flowlinux/config.toml`. Status cue: libnotify + optional sound.
+  injection trivial). CLI verbs: `nava start|stop|status|config|doctor|model`.
+  Config: TOML at `~/.config/nava/config.toml`. Status cue: libnotify + optional sound.
 - **Injection:** XTEST typing (xdotool) primary → clipboard-paste (xclip) → notify. Behind
   an `Injector` interface; a `WaylandInjector` slots in later.
 - **Hotkey:** pynput X11 monitor, Right-Ctrl push-to-talk (M2).
@@ -28,9 +28,9 @@ Full environment + rationale in [PLAN.md](PLAN.md).
 
 ## Repo layout
 ```
-flowlinux/
+nava/
   injection/   # M1 — Injector iface, xdotool/clipboard/notify backends, manager, window, preflight
-  cli.py       # M1 — `flowlinux-inject`
+  cli.py       # M1 — `nava-inject`
   core/ hotkey/ audio/ asr/ format/ tui/ diagnostics/  # stubs, filled per milestone (tui = Rich/questionary, no GUI)
 bench/          # M3+ WER + latency harness
 packaging/      # M7 deb/appimage/systemd
@@ -47,20 +47,20 @@ pip install -e ".[hotkey,audio,asr,tui,bench,dev]"   # all milestone deps
 # or one-shot bootstrap (apt deps + venv + systemd unit + wizard):
 ./install.sh
 
-flowlinux setup                                   # M5: first-run TUI wizard (config + dictionary)
-flowlinux config                                  # M5: edit config (TUI)
-flowlinux start                                   # M5: run the config-driven dictation daemon
-flowlinux status                                  # M5: config + daemon state
+nava setup                                   # M5: first-run TUI wizard (config + dictionary)
+nava config                                  # M5: edit config (TUI)
+nava start                                   # M5: run the config-driven dictation daemon
+nava status                                  # M5: config + daemon state
 
-echo "hello world" | flowlinux-inject            # M1: type via XTEST
-echo "hello world" | flowlinux-inject --paste     # M1: clipboard paste
-flowlinux record                                  # M2: hold Right-Ctrl to talk (PTT daemon)
-flowlinux record --duration 2                     # M2: 2s mic test (no hotkey)
-flowlinux transcribe file.wav                     # M3: transcribe a file (--inject to type it)
-flowlinux dictate                                 # M3: hold Right-Ctrl -> speak -> text injected (MVP)
-flowlinux doctor                                  # diagnostics: injection + audio + hotkey
+echo "hello world" | nava-inject            # M1: type via XTEST
+echo "hello world" | nava-inject --paste     # M1: clipboard paste
+nava record                                  # M2: hold Right-Ctrl to talk (PTT daemon)
+nava record --duration 2                     # M2: 2s mic test (no hotkey)
+nava transcribe file.wav                     # M3: transcribe a file (--inject to type it)
+nava dictate                                 # M3: hold Right-Ctrl -> speak -> text injected (MVP)
+nava doctor                                  # diagnostics: injection + audio + hotkey
 pytest -q                                         # tests (ASR integration gated by env var)
-FLOWLINUX_ASR_INTEGRATION=1 pytest tests/test_asr_integration.py   # silence/noise -> empty
+NAVA_ASR_INTEGRATION=1 pytest tests/test_asr_integration.py   # silence/noise -> empty
 ```
 
 ## Conventions

@@ -1,4 +1,4 @@
-"""`flowlinux` — top-level CLI verbs.
+"""`nava` — top-level CLI verbs.
 
 M2 implements: `record` (PTT capture loop / fixed-duration test), `doctor`, `version`.
 Future milestones add: start|stop|status|config|model (M5).
@@ -21,13 +21,13 @@ def _cmd_record(args) -> int:
 
     # Fixed-duration mode: capture N seconds immediately, no hotkey (headless mic test).
     if args.duration is not None:
-        print(f"[flowlinux] recording {args.duration}s from mic…")
+        print(f"[nava] recording {args.duration}s from mic…")
         rec = record_fixed(args.duration, device=args.device)
         out_dir = Path(args.out_dir) if args.out_dir else default_out_dir()
         out_dir.mkdir(parents=True, exist_ok=True)
         path = out_dir / "fixed-capture.wav"
         save_wav(rec, str(path))
-        print(f"[flowlinux] captured {rec.duration_s:.1f}s, peak {rec.peak} → {path}")
+        print(f"[nava] captured {rec.duration_s:.1f}s, peak {rec.peak} → {path}")
         return 0
 
     app = RecorderApp(
@@ -112,8 +112,8 @@ def _cmd_status(args) -> int:  # noqa: ARG001
     from .core.service import status_text
 
     cfg_path = default_config_path()
-    print(f"FlowLinux status")
-    print(f"  config  : {'present' if cfg_path.exists() else 'missing (run flowlinux setup)'} "
+    print(f"NAVA status")
+    print(f"  config  : {'present' if cfg_path.exists() else 'missing (run nava setup)'} "
           f"({cfg_path})")
     if cfg_path.exists():
         c = Config.load()
@@ -158,9 +158,9 @@ def _cmd_start(args) -> int:  # noqa: ARG001
 
     ok, msg = start()
     if ok:
-        print(f"flowlinux: started — {msg}. Stop with `flowlinux stop`.")
+        print(f"nava: started — {msg}. Stop with `nava stop`.")
     else:
-        print(f"flowlinux: could not start — {msg}", file=sys.stderr)
+        print(f"nava: could not start — {msg}", file=sys.stderr)
     return 0 if ok else 1
 
 
@@ -168,7 +168,7 @@ def _cmd_enable(args) -> int:  # noqa: ARG001
     from .core.service import enable
 
     ok, msg = enable()
-    print(f"flowlinux: {msg}" if ok else f"flowlinux: {msg}",
+    print(f"nava: {msg}" if ok else f"nava: {msg}",
           file=(None if ok else sys.stderr))
     return 0 if ok else 1
 
@@ -177,17 +177,17 @@ def _cmd_stop(args) -> int:  # noqa: ARG001
     from .core.service import stop
 
     ok, msg = stop()
-    print(f"flowlinux: {msg}")
+    print(f"nava: {msg}")
     return 0 if ok else 1
 
 
 def _cmd_version(args) -> int:  # noqa: ARG001
-    print(f"flowlinux {__version__}")
+    print(f"nava {__version__}")
     return 0
 
 
 def main(argv: list[str] | None = None) -> int:
-    p = argparse.ArgumentParser(prog="flowlinux", description="FlowLinux voice dictation (terminal-first).")
+    p = argparse.ArgumentParser(prog="nava", description="NAVA voice dictation (terminal-first).")
     sub = p.add_subparsers(dest="cmd", required=True)
 
     rec = sub.add_parser("record", help="push-to-talk capture loop (or --duration for a fixed test)")

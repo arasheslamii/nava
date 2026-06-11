@@ -57,7 +57,7 @@ class DictationApp:
             text = fr.text
         if not text:
             if self.cues == "full":
-                feedback.notify("FlowLinux", "(no speech detected)")
+                feedback.notify("NAVA", "(no speech detected)")
             return
         if not self.inject:
             return
@@ -65,11 +65,11 @@ class DictationApp:
         if not res.ok:
             print(f"[inject] FAILED: {res.detail}")
             if self.cues == "full":
-                feedback.notify("FlowLinux", f"inject failed: {res.detail}")
+                feedback.notify("NAVA", f"inject failed: {res.detail}")
 
     def run(self) -> None:
-        print(f"[flowlinux] loading model {self.backend.name} …")
+        print(f"[nava] loading model {self.backend.name} …")
         t0 = time.monotonic()
         self.warmup()
-        print(f"[flowlinux] model ready in {time.monotonic() - t0:.1f}s")
+        print(f"[nava] model ready in {time.monotonic() - t0:.1f}s")
         self.recorder_app.run()

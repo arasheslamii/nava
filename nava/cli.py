@@ -1,4 +1,4 @@
-"""`flowlinux-inject` — CLI entry point for the M1 injection spike."""
+"""`nava-inject` — CLI entry point for the M1 injection spike."""
 
 from __future__ import annotations
 
@@ -17,7 +17,7 @@ from .injection.window import get_active_window
 
 
 def _cmd_doctor() -> int:
-    print("FlowLinux injection diagnostics")
+    print("NAVA injection diagnostics")
     x11 = session_is_x11()
     print(f"  session is X11 : {'yes' if x11 else 'NO (Wayland backend not yet implemented)'}")
     for dep, ok in check_dependencies():
@@ -43,7 +43,7 @@ def _cmd_doctor() -> int:
 
 def main(argv: list[str] | None = None) -> int:
     p = argparse.ArgumentParser(
-        prog="flowlinux-inject",
+        prog="nava-inject",
         description="Inject text into the focused window (X11). Reads stdin if no text given.",
     )
     p.add_argument("text", nargs="*", help="text to inject; if omitted, read from stdin")
@@ -65,14 +65,14 @@ def main(argv: list[str] | None = None) -> int:
     text = " ".join(args.text) if args.text else sys.stdin.read()
     text = text.rstrip("\n")  # drop the trailing newline `echo` adds
     if not text:
-        print("flowlinux-inject: no input text", file=sys.stderr)
+        print("nava-inject: no input text", file=sys.stderr)
         return 2
 
     method = "paste" if args.paste else args.method
 
     miss = missing_required()
     if miss:
-        print("flowlinux-inject: missing required deps: "
+        print("nava-inject: missing required deps: "
               + ", ".join(d.name for d in miss), file=sys.stderr)
         print("  " + apt_install_hint(miss), file=sys.stderr)
         # still attempt — the notify fallback may still recover the text
@@ -84,9 +84,9 @@ def main(argv: list[str] | None = None) -> int:
     res = mgr.inject(text, method=method)
     if res.ok:
         extra = f" (after {', '.join(res.fallbacks)})" if res.fallbacks else ""
-        print(f"flowlinux-inject: ok via {res.backend} - {res.detail}{extra}", file=sys.stderr)
+        print(f"nava-inject: ok via {res.backend} - {res.detail}{extra}", file=sys.stderr)
         return 0
-    print(f"flowlinux-inject: FAILED - {res.detail}; tried: {', '.join(res.fallbacks)}",
+    print(f"nava-inject: FAILED - {res.detail}; tried: {', '.join(res.fallbacks)}",
           file=sys.stderr)
     return 1
 

@@ -7,9 +7,9 @@ import shutil
 
 import pytest
 
-from flowlinux.injection.base import HealthStatus, InjectionResult, Injector
-from flowlinux.injection.manager import InjectionManager, prefer_paste
-from flowlinux.injection.window import (
+from nava.injection.base import HealthStatus, InjectionResult, Injector
+from nava.injection.manager import InjectionManager, prefer_paste
+from nava.injection.window import (
     TERMINAL_WM_CLASSES,
     ActiveWindow,
     paste_keystroke_for,
@@ -130,10 +130,10 @@ def test_all_fail_returns_none_backend():
     reason="needs an X11 display and xclip",
 )
 def test_clipboard_roundtrip_with_unicode():
-    from flowlinux.injection.clipboard import ClipboardInjector
+    from nava.injection.clipboard import ClipboardInjector
 
     ci = ClipboardInjector()
-    marker = "flowlinux-test-éè—\U0001f600-42"  # accents, em-dash, emoji
+    marker = "nava-test-éè—\U0001f600-42"  # accents, em-dash, emoji
     assert ci._set_clipboard(marker.encode("utf-8"))
     got = ci._get_clipboard()
     assert got is not None and got.decode("utf-8") == marker

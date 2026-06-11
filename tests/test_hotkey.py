@@ -2,8 +2,8 @@
 
 from __future__ import annotations
 
-from flowlinux.hotkey.base import PTTController, PTTMode
-from flowlinux.hotkey.pynput_x11 import normalize_key
+from nava.hotkey.base import PTTController, PTTMode
+from nava.hotkey.pynput_x11 import normalize_key
 
 
 class Spy:

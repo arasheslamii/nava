@@ -18,7 +18,7 @@ import argparse
 import csv
 from pathlib import Path
 
-from flowlinux.audio.capture import AudioRecorder, save_wav
+from nava.audio.capture import AudioRecorder, save_wav
 
 CATEGORIES = ("plain", "jargon", "noisy")
 

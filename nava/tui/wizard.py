@@ -98,9 +98,9 @@ def run_setup() -> int:
     console.print(f"[green]✓ Saved config → {path}[/]")
     _seed_dictionary(console)
     console.rule("[bold]Next steps")
-    console.print("  • Try it now:        [cyan]flowlinux dictate[/]  (hold Right-Ctrl, speak)")
-    console.print("  • Run as a service:  [cyan]flowlinux start[/]   (foreground)  / install systemd unit")
-    console.print("  • Re-check anytime:  [cyan]flowlinux doctor[/]")
+    console.print("  • Try it now:        [cyan]nava dictate[/]  (hold Right-Ctrl, speak)")
+    console.print("  • Run as a service:  [cyan]nava start[/]   (foreground)  / install systemd unit")
+    console.print("  • Re-check anytime:  [cyan]nava doctor[/]")
     return 0
 
 
@@ -109,7 +109,7 @@ def run_config_editor() -> int:
 
     console = Console()
     cfg = Config.load()
-    console.rule("[bold]Edit FlowLinux config")
+    console.rule("[bold]Edit NAVA config")
     answers = _prompt(cfg)
     if answers is None:
         console.print("[yellow]No changes saved.[/]")

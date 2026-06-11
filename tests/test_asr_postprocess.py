@@ -2,8 +2,8 @@
 
 from __future__ import annotations
 
-from flowlinux.asr.base import Segment
-from flowlinux.asr.postprocess import (
+from nava.asr.base import Segment
+from nava.asr.postprocess import (
     HallucinationThresholds,
     filter_segments,
     is_hallucinated_segment,

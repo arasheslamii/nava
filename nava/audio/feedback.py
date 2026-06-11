@@ -43,7 +43,7 @@ def stop_cue() -> None:
 def notify(title: str, message: str = "") -> None:
     if shutil.which("notify-send"):
         try:
-            subprocess.run(["notify-send", "-a", "FlowLinux", "-t", "1500", title, message],
+            subprocess.run(["notify-send", "-a", "NAVA", "-t", "1500", title, message],
                            capture_output=True, timeout=2)
         except (OSError, subprocess.TimeoutExpired):
             pass

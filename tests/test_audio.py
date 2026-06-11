@@ -6,7 +6,7 @@ import wave
 
 import numpy as np
 
-from flowlinux.audio.capture import Recording, save_wav
+from nava.audio.capture import Recording, save_wav
 
 
 def test_recording_duration_and_peak():

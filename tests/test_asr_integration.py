@@ -1,6 +1,6 @@
 """ASR integration tests — load a real Whisper model (gated; downloads on first run).
 
-Run with:  FLOWLINUX_ASR_INTEGRATION=1 pytest tests/test_asr_integration.py -q
+Run with:  NAVA_ASR_INTEGRATION=1 pytest tests/test_asr_integration.py -q
 """
 
 from __future__ import annotations
@@ -11,13 +11,13 @@ import numpy as np
 import pytest
 
 pytestmark = pytest.mark.skipif(
-    os.environ.get("FLOWLINUX_ASR_INTEGRATION") != "1",
-    reason="set FLOWLINUX_ASR_INTEGRATION=1 to run (loads/downloads a Whisper model)",
+    os.environ.get("NAVA_ASR_INTEGRATION") != "1",
+    reason="set NAVA_ASR_INTEGRATION=1 to run (loads/downloads a Whisper model)",
 )
 
 
 def _backend():
-    from flowlinux.asr.factory import build_backend
+    from nava.asr.factory import build_backend
 
     return build_backend(engine="faster-whisper", model="small.en", device="cpu")
 

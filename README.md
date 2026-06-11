@@ -1,4 +1,4 @@
-# FlowLinux
+# NAVA
 
 System-wide, local-first AI voice dictation for Linux. Clean-room — no code, assets, or
 branding from any other product.
@@ -11,10 +11,10 @@ branding from any other product.
 Reliable text injection into the focused window on **X11**:
 
 ```bash
-echo "hello world" | flowlinux-inject          # type via XTEST (xdotool)
-echo "hello world" | flowlinux-inject --paste   # clipboard set + synthesized paste
-flowlinux-inject --doctor                        # diagnostics / health check
-flowlinux-inject --wait 2 "focus another app"    # 2s to switch focus, then inject
+echo "hello world" | nava-inject          # type via XTEST (xdotool)
+echo "hello world" | nava-inject --paste   # clipboard set + synthesized paste
+nava-inject --doctor                        # diagnostics / health check
+nava-inject --wait 2 "focus another app"    # 2s to switch focus, then inject
 ```
 
 Backends escalate automatically: **type → paste → notify** (last resort copies to

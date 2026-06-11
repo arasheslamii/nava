@@ -19,7 +19,7 @@ from ..hotkey.pynput_x11 import PynputX11Hotkey
 
 
 def default_out_dir() -> Path:
-    base = Path.home() / ".cache" / "flowlinux" / "recordings"
+    base = Path.home() / ".cache" / "nava" / "recordings"
     return base
 
 
@@ -62,19 +62,19 @@ class RecorderApp:
         if self._play_start:
             feedback.start_cue()
         if self._full:
-            feedback.notify("FlowLinux", "Listening…")
+            feedback.notify("NAVA", "Listening…")
         try:
             self.recorder.start()
         except Exception as e:  # mic failure must not crash the daemon
-            print(f"[flowlinux] capture failed to start: {e}")
+            print(f"[nava] capture failed to start: {e}")
             if self._full:
-                feedback.notify("FlowLinux", f"Mic error: {e}")
+                feedback.notify("NAVA", f"Mic error: {e}")
 
     def _on_stop(self) -> None:
         try:
             rec = self.recorder.stop()
         except Exception as e:
-            print(f"[flowlinux] capture stop failed: {e}")
+            print(f"[nava] capture stop failed: {e}")
             return
         if self._full:
             feedback.stop_cue()
@@ -87,14 +87,14 @@ class RecorderApp:
         self.last_recording = rec
         self.last_path = path
         msg = f"{rec.duration_s:.1f}s, peak {rec.peak}" + (f" → {path.name}" if path else "")
-        print(f"[flowlinux] captured {msg}")
+        print(f"[nava] captured {msg}")
         if self._full:
-            feedback.notify("FlowLinux", f"Captured {msg}")
+            feedback.notify("NAVA", f"Captured {msg}")
         if self.on_utterance is not None:
             try:
                 self.on_utterance(rec, path)
             except Exception as e:
-                print(f"[flowlinux] on_utterance handler error: {e}")
+                print(f"[nava] on_utterance handler error: {e}")
         if self.once:
             self._done.set()
 
@@ -106,12 +106,12 @@ class RecorderApp:
             PTTMode.TOGGLE: f"Press [{self.key}] to start/stop.",
             PTTMode.DOUBLE_TAP: f"Double-tap [{self.key}] to start, press to stop.",
         }[self.mode]
-        print(f"[flowlinux] recorder ready — {hint}  (Ctrl+C to quit)")
+        print(f"[nava] recorder ready — {hint}  (Ctrl+C to quit)")
         try:
             while not self._done.is_set():
                 time.sleep(0.1)
         except KeyboardInterrupt:
-            print("\n[flowlinux] stopping.")
+            print("\n[nava] stopping.")
         finally:
             self.stop()
 

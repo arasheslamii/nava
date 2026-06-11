@@ -2,9 +2,9 @@
 
 from __future__ import annotations
 
-from flowlinux.format.dictionary import CustomDictionary
-from flowlinux.format.pipeline import FormatterPipeline
-from flowlinux.format.rules import Tier1RuleFormatter
+from nava.format.dictionary import CustomDictionary
+from nava.format.pipeline import FormatterPipeline
+from nava.format.rules import Tier1RuleFormatter
 
 
 # --- custom dictionary ---

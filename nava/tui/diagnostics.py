@@ -12,7 +12,7 @@ def render_diagnostics(console=None, checks: list[Check] | None = None) -> bool:
     console = console or Console()
     checks = checks if checks is not None else run_all()
 
-    table = Table(title="FlowLinux diagnostics", title_style="bold", header_style="bold")
+    table = Table(title="NAVA diagnostics", title_style="bold", header_style="bold")
     table.add_column("check", no_wrap=True)
     table.add_column("status", no_wrap=True)
     table.add_column("detail", overflow="fold")

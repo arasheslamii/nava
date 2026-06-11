@@ -35,7 +35,7 @@ class NotifyInjector(Injector):
                if copied else "Could not inject or copy text.")
         if shutil.which("notify-send"):
             try:
-                subprocess.run(["notify-send", "-a", "FlowLinux", "FlowLinux", msg],
+                subprocess.run(["notify-send", "-a", "NAVA", "NAVA", msg],
                                capture_output=True, timeout=2)
             except (OSError, subprocess.TimeoutExpired):
                 pass

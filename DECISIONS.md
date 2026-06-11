@@ -229,3 +229,11 @@ Terminal-first product layer (ADR-0007), no GUI:
   `feedback.cues = off | sound-only | full` toggle, **default off (silent)**. sound-only = one
   quiet start beep; full = start/stop beeps + notifications. Wired through RecorderApp/
   DictationApp + `--cues` on record/dictate + the setup/config wizard. 43 tests.
+
+## ADR-0011 — Rename app to NAVA (2026-06-11)
+Renamed the application from the working name "FlowLinux" to **NAVA**. Package `flowlinux/` →
+`nava/`; console scripts `nava` + `nava-inject`; config dir `~/.config/nava/`; systemd unit
+`nava.service`; env var `NAVA_ASR_INTEGRATION`; TUI banner = NAVA ASCII logo; all branding
+strings updated. Historical log entries above (ADR-0001…0010, milestone results) keep their
+original "flowlinux" wording as the dated record; CLAUDE.md/README rebranded. User config
+auto-migrated from `~/.config/flowlinux`. 43 tests pass under the new name.

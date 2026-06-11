@@ -1,12 +1,12 @@
 #!/usr/bin/env bash
-# M1 automated acceptance: drive the real `flowlinux-inject` CLI into a live GTK
+# M1 automated acceptance: drive the real `nava-inject` CLI into a live GTK
 # text-entry (zenity) and verify the text actually lands. Exercises both the XTEST
 # typing path and the clipboard-paste path end-to-end. Requires X11 + xdotool + zenity.
 #
 # Usage:  scripts/m1_zenity_acceptance.sh
 set -u
 
-INJECT="${INJECT:-flowlinux-inject}"
+INJECT="${INJECT:-nava-inject}"
 pass=0; fail=0
 
 need() { command -v "$1" >/dev/null 2>&1 || { echo "MISSING: $1"; exit 3; }; }
@@ -46,8 +46,8 @@ run_case() {  # $1=title  $2=method  $3=expected text
 }
 
 echo "== M1 zenity acceptance =="
-run_case "flowlinux-m1-type"  type  "hello world"
-run_case "flowlinux-m1-paste" paste "pasted text 123"
+run_case "nava-m1-type"  type  "hello world"
+run_case "nava-m1-paste" paste "pasted text 123"
 
 echo "-- result: $pass passed, $fail failed --"
 [ "$fail" -eq 0 ]

@@ -1,6 +1,6 @@
 """systemd --user service helpers for the headless background daemon (ADR-0007).
 
-The unit's ExecStart runs the foreground daemon (`flowlinux _run`). `flowlinux start`
+The unit's ExecStart runs the foreground daemon (`nava _run`). `nava start`
 installs the unit on demand and starts it, so the daemon survives the terminal closing.
 """
 
@@ -12,7 +12,7 @@ import subprocess
 import sys
 from pathlib import Path
 
-SERVICE = "flowlinux.service"
+SERVICE = "nava.service"
 
 
 def have_systemd() -> bool:
@@ -30,13 +30,13 @@ def unit_path() -> Path:
 
 def _unit_contents() -> str:
     # Run via the interpreter that owns this install, so it works regardless of PATH.
-    exec_start = f"{sys.executable} -m flowlinux.cli_main _run"
+    exec_start = f"{sys.executable} -m nava.cli_main _run"
     env = [f"Environment=DISPLAY={os.environ.get('DISPLAY', ':0')}"]
     if os.environ.get("XAUTHORITY"):
         env.append(f"Environment=XAUTHORITY={os.environ['XAUTHORITY']}")
     return (
         "[Unit]\n"
-        "Description=FlowLinux voice dictation daemon\n"
+        "Description=NAVA voice dictation daemon\n"
         "After=graphical-session.target\n"
         "PartOf=graphical-session.target\n\n"
         "[Service]\n"
@@ -81,7 +81,7 @@ def main_pid() -> int | None:
 
 def start() -> tuple[bool, str]:
     if not have_systemd():
-        return False, "systemd --user unavailable; run `flowlinux _run` in the foreground"
+        return False, "systemd --user unavailable; run `nava _run` in the foreground"
     ensure_installed()
     r = _systemctl("start", SERVICE)
     if r.returncode != 0:
@@ -111,9 +111,9 @@ def enable() -> tuple[bool, str]:
 
 def status_text() -> str:
     if not have_systemd():
-        return "systemd not available (use `flowlinux _run` to test in the foreground)"
+        return "systemd not available (use `nava _run` to test in the foreground)"
     if not is_installed():
-        return "not installed (run `flowlinux start` to install + launch)"
+        return "not installed (run `nava start` to install + launch)"
     if is_active():
         pid = main_pid()
         return f"running in background (PID {pid})" if pid else "running in background"

@@ -26,8 +26,8 @@ from pathlib import Path
 
 import jiwer
 
-from flowlinux.asr.factory import build_backend
-from flowlinux.audio.load import load_audio_file
+from nava.asr.factory import build_backend
+from nava.audio.load import load_audio_file
 
 _PUNCT = re.compile(r"[^\w\s']")
 _WS = re.compile(r"\s+")
@@ -123,7 +123,7 @@ def main() -> int:
 
     formatter = None
     if args.format:
-        from flowlinux.format.pipeline import build_pipeline
+        from nava.format.pipeline import build_pipeline
         formatter = build_pipeline(dict_path=args.dict)
 
     kind, _, root = args.dataset.partition(":")

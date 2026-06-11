@@ -2,8 +2,8 @@
 
 from __future__ import annotations
 
-from flowlinux.core.config import Config
-from flowlinux.tui.wizard import apply_answers
+from nava.core.config import Config
+from nava.tui.wizard import apply_answers
 
 
 def test_defaults():

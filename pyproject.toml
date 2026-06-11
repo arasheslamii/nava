@@ -3,13 +3,13 @@ requires = ["setuptools>=68", "wheel"]
 build-backend = "setuptools.build_meta"
 
 [project]
-name = "flowlinux"
+name = "nava"
 version = "0.0.1"
 description = "System-wide, local-first AI voice dictation for Linux (clean-room)."
 readme = "README.md"
 requires-python = ">=3.10"
 license = { text = "Apache-2.0" }
-authors = [{ name = "FlowLinux" }]
+authors = [{ name = "NAVA" }]
 
 # M1 (injection) is pure-stdlib; backends shell out to xdotool/xclip/notify-send.
 dependencies = []
@@ -27,11 +27,11 @@ tui    = ["rich>=13", "questionary>=2", "tomli-w>=1.0"]  # M5: terminal installe
 dev    = ["pytest>=7"]
 
 [project.scripts]
-flowlinux = "flowlinux.cli_main:main"
-flowlinux-inject = "flowlinux.cli:main"
+nava = "nava.cli_main:main"
+nava-inject = "nava.cli:main"
 
 [tool.setuptools.packages.find]
-include = ["flowlinux*"]
+include = ["nava*"]
 
 [tool.pytest.ini_options]
 testpaths = ["tests"]

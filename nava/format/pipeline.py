@@ -35,7 +35,7 @@ class FormatterPipeline(Formatter):
 
 def default_dictionary_path() -> Path:
     base = os.environ.get("XDG_CONFIG_HOME") or os.path.expanduser("~/.config")
-    return Path(base) / "flowlinux" / "dictionary.toml"
+    return Path(base) / "nava" / "dictionary.toml"
 
 
 def build_pipeline(dict_path: str | None = None, enabled: bool = True) -> FormatterPipeline:
