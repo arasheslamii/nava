@@ -1,7 +1,7 @@
 # NAVA
 
 Local-first AI voice dictation for Linux (**X11**). Hold a key, speak, and polished text is injected into whatever app has focus. Clean-room — no code, assets, or branding from any other product.
-> ### 🌐 **[WEBSITE](https://damp-lab-cad9.arasharyan44.workers.dev/#install)**
+> ### 🌐 **[WEBSITE](https://damp-lab-cad9.arasharyan44.workers.dev/**
 > Project site, install guide, and downloads.
 
 ## Quickstart (Debian / Ubuntu / Mint)
