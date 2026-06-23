@@ -4,8 +4,6 @@ Local-first AI voice dictation for Linux (**X11**). Hold a key, speak, and polis
 > ### 🌐 **[WEBSITE](https://damp-lab-cad9.arasharyan44.workers.dev/#install)**
 > Project site, install guide, and downloads.
 
-> **Status:** M1–M7 complete. Local Whisper ASR, Tier-1 formatting + custom dictionary, terminal-first TUI, background `systemd --user` daemon, and `.deb` / AUR / AppImage packaging.
-
 ## Quickstart (Debian / Ubuntu / Mint)
 
 Download the latest `.deb` from [Releases](https://github.com/arasheslamii/nava/releases), then:
